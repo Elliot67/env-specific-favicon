@@ -18,6 +18,6 @@ h2 {
 section {
   background-color: var(--esf-primary);
   border-radius: 1rem;
-  box-shadow: rgba(0, 0, 0, 0.3) 0 1px 2px 0, rgba(0, 0, 0, 0.15) 0 2px 6px 2px;
+  box-shadow: var(--esf-box-shadow);
 }
 </style>

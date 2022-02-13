@@ -1,0 +1,17 @@
+.v-popper--theme-dropdown {
+  .v-popper__inner {
+    box-shadow: var(--esf-box-shadow);
+    border: none;
+    color: var(--esf-secondary);
+    background-color: var(--esf-primary);
+    border-radius: 4px;
+  }
+
+  .v-popper__arrow-outer {
+    visibility: hidden;
+  }
+
+  .v-popper__arrow-inner {
+    visibility: hidden;
+  }
+}

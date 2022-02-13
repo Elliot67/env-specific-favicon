@@ -42,7 +42,17 @@
               <div>URL</div>
               <div>*//*/*/</div>
               <div>Disabled</div>
-              <button class="rules-rowAction rules-actionIcons"><img src="/assets/icon-dots.svg" alt="" /></button>
+              <Dropdown>
+                <button class="rules-rowAction rules-actionIcons"><img src="/assets/icon-dots.svg" alt="" /></button>
+                <template #popper>
+                  <div class="rules-menu">
+                    <button>Disable rule</button>
+                    <button>Edit rule</button>
+                    <button>Move above</button>
+                    <button>Move below</button>
+                  </div>
+                </template>
+              </Dropdown>
             </div>
           </Draggable>
         </Container>
@@ -79,6 +89,7 @@ import EsfSection from '~/components/esf-section.vue';
 import EsfButton from '~/components/esf-button.vue';
 import browser from 'webextension-polyfill';
 import { Container, Draggable } from 'vue-dndrop';
+import { Dropdown } from 'floating-vue';
 
 function onDrop(dropResult) {
   console.log(dropResult);
@@ -169,6 +180,7 @@ main {
     height: 6rem;
     position: relative;
     outline-style: none;
+    display: block;
 
     &::before {
       content: '';
@@ -177,15 +189,43 @@ main {
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: var(--esf-accent-opacity);
       border-radius: 50%;
       transform: scale(0);
       transition-property: transform;
       transition-duration: 0.2s;
       opacity: 0.4;
     }
-    &:focus-visible::before {
+
+    &:hover::before {
+      background-color: var(--esf-primary-light);
       transform: scale(1.4);
+    }
+    &:focus-visible::before {
+      background-color: var(--esf-accent-opacity);
+      transform: scale(1.4);
+    }
+  }
+
+  &-menu {
+    padding-block: 2rem;
+    display: flex;
+    flex-direction: column;
+
+    button {
+      padding-inline: 5rem;
+      height: 9rem;
+      width: 100%;
+      text-align: start;
+
+      &:disabled {
+        color: var(--esf-secondary-dark);
+      }
+
+      &:hover:not(:disabled),
+      &:focus-visible:not(:disabled) {
+        background: var(--esf-primary-light);
+        // TODO: Add focus trap for the menu
+      }
     }
   }
 
