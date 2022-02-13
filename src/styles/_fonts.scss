@@ -1,0 +1,18 @@
+// https://google-webfonts-helper.herokuapp.com/fonts/roboto?subsets=latin
+
+/* roboto-regular - latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local(''), url('/assets/fonts/roboto-v29-latin-regular.woff2') format('woff2'),
+    url('/assets/fonts/roboto-v29-latin-regular.woff') format('woff');
+}
+/* roboto-500 - latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  src: local(''), url('/assets/fonts/roboto-v29-latin-500.woff2') format('woff2'),
+    url('/assets/fonts/roboto-v29-latin-500.woff') format('woff');
+}

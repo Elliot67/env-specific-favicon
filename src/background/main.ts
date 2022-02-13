@@ -1,4 +1,5 @@
 import { sendMessage, onMessage } from 'webext-bridge';
+import { Manifest } from 'webextension-polyfill';
 import { isNull, isUndefined } from '~/logic/utils';
 
 // only on dev mode
@@ -43,12 +44,13 @@ async function manageTabUpdate(tabId: number) {
 
     const match = getMatch({ url: tab.url, title: tab.title });
     if (match === false) {
-      console.log('no match for this URL');
+      console.log('no match for this tab');
       return;
     }
 
     const favicon = await generateFavicon(match, tab.favIconUrl);
     sendMessage('update-favicon', { favicon: favicon }, `content-script@${tabId}`);
+    console.log('just sended a message with ', favicon);
   } catch (e) {
     console.warn('error while retrieving tab informations', e);
   }
@@ -59,7 +61,15 @@ function getMatch(prop: { url: string | undefined; title: string | undefined }):
     return false;
   }
 
-  const activeLocalStorage: AppDataItem[] = []; // TODO: Stocker les données à un endroit pour éviter de devoir les récupérer à chaque fois
+  const activeLocalStorage: AppDataItem[] = [
+    {
+      active: true,
+      type: 'url',
+      testPattern: '*',
+      filter: 'top',
+      color: 'red',
+    },
+  ]; // TODO: Stocker les données à un endroit pour éviter de devoir les récupérer à chaque fois
 
   for (const item of activeLocalStorage) {
     const value = prop[item.type];
@@ -67,7 +77,7 @@ function getMatch(prop: { url: string | undefined; title: string | undefined }):
       continue;
     }
 
-    const regex = new RegExp(item.testPattern);
+    const regex = new RegExp(`/${item.testPattern}/`);
     if (regex.test(value)) {
       return item;
     }
@@ -78,7 +88,10 @@ function getMatch(prop: { url: string | undefined; title: string | undefined }):
 
 function generateFavicon(item: AppDataItem, url: string | undefined): Promise<string> {
   return new Promise((resolve, reject) => {
+    console.error('THE URL', url);
+
     if (isUndefined(url)) {
+      console.log('getting blank favicon');
       url = getBlankFavicon();
     }
 

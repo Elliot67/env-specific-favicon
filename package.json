@@ -50,5 +50,6 @@
     "web-ext": "^6.4.0",
     "webext-bridge": "^5.0.0",
     "webextension-polyfill": "^0.8.0"
-  }
+  },
+  "dependencies": {}
 }

@@ -1,0 +1,84 @@
+*,
+:after,
+:before {
+  -webkit-font-smoothing: antialiased;
+  box-sizing: inherit;
+}
+
+html {
+  overflow-y: scroll;
+  box-sizing: border-box;
+  font-size: 25%;
+  text-rendering: optimizeSpeed;
+  text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus-within {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+body {
+  font-size: 13px;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+  font-size: inherit;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  font-family: var(--esf-family);
+  font-weight: var(--esf-regular);
+  background-color: var(--esf-primary-dark);
+  color: var(--esf-secondary);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline-style: solid;
+  outline-width: 2px;
+  outline-color: var(--esf-accent-opacity);
+}
+
+::selection {
+  background-color: var(--esf-accent);
+}
+
+html,
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin: 0;
+  padding: 0;
+  font-weight: inherit;
+}
