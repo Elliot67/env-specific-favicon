@@ -21,6 +21,7 @@ interface AppDataGlobal {
 }
 
 interface AppDataItem {
+  id: string;
   active: boolean;
   type: 'url' | 'title';
   testPattern: string;

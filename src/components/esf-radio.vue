@@ -1,6 +1,6 @@
 <template>
-  <label class="radio">
-    <input v-model="rootValue" type="radio" :name="name" :value="value" />
+  <label class="radio" :for="id">
+    <input :id="id" v-model="rootValue" type="radio" :name="name" :value="value" />
     <div class="fake"></div>
     <span>{{ label }}</span>
   </label>
@@ -8,6 +8,7 @@
 
 <script lang="ts" setup>
 import { defineProps, defineEmits, computed } from 'vue';
+import { getId } from '~/logic/counter';
 
 const props = defineProps({
   modelValue: {
@@ -26,6 +27,8 @@ const props = defineProps({
   },
 });
 
+const id = 'radio-' + getId();
+
 const emits = defineEmits(['update:modelValue']);
 
 const rootValue = computed({
@@ -42,6 +45,7 @@ const rootValue = computed({
 label {
   display: flex;
   align-items: center;
+  cursor: pointer;
 }
 
 input {
@@ -53,7 +57,7 @@ input {
 }
 
 .fake {
-  background-color: var(--esf-primary);
+  background-color: transparent;
   width: 4rem;
   height: 4rem;
   border-radius: 50%;

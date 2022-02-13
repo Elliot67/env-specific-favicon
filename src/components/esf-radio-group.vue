@@ -11,6 +11,7 @@
 
 <script lang="ts" setup>
 import { defineEmits, defineProps, PropType, computed } from 'vue';
+import { getId } from '~/logic/counter';
 import EsfRadio from './esf-radio.vue';
 
 const emit = defineEmits(['update:modelValue']);
@@ -25,7 +26,7 @@ const props = defineProps({
   },
   name: {
     type: String,
-    required: true,
+    default: () => 'radio_group-' + getId(),
   },
 });
 
@@ -37,6 +38,4 @@ const baseValue = computed({
     emit('update:modelValue', newValue);
   },
 });
-
-const name = 'name'; // TODO: Rendre dynamique
 </script>
