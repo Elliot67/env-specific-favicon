@@ -54,12 +54,12 @@ input {
 
 .fake {
   background-color: var(--esf-primary);
-  width: 1em;
-  height: 1em;
+  width: 4rem;
+  height: 4rem;
   border-radius: 50%;
-  border: 1px solid var(--esf-secondary);
+  border: 2px solid var(--esf-secondary-dark);
   display: inline-flex;
-  margin-inline-end: 0.5em;
+  margin-inline-end: 5rem;
   flex-shrink: 0;
 }
 
@@ -70,12 +70,13 @@ input:checked + .fake {
   align-items: center;
 
   &::before {
+    flex-shrink: 0;
     content: '';
-    height: 0.75em;
-    width: 0.75em;
+    height: 3rem;
+    width: 3rem;
     border-radius: 50%;
     background-color: var(--esf-accent);
-    border: 3px solid var(--esf-primary);
+    border: 2px solid var(--esf-primary);
   }
 }
 
@@ -84,5 +85,9 @@ input:focus-visible + .fake {
   outline-offset: 2px;
   outline-width: 3px;
   outline-color: var(--esf-accent-opacity);
+}
+
+span {
+  padding-block: 2rem;
 }
 </style>

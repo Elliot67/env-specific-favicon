@@ -4,10 +4,17 @@
       <template #title>General</template>
       <template #body>
         <div class="sectionItem">
-          <h3>Manage configuration</h3>
+          <h3 class="selectionLabel">Manage configuration</h3>
+          <div class="general-subItem">
+            <p class="textLight">Backup and share your settings</p>
+            <div class="general-action">
+              <EsfButton>Import</EsfButton>
+              <EsfButton>Export</EsfButton>
+            </div>
+          </div>
         </div>
         <div class="sectionItem">
-          <h3>Default favicon</h3>
+          <h3 class="selectionLabel">Default favicon</h3>
           <EsfRadioGroup v-model="defaultFavIcon" name="nom" :options="defaultFaviconOptions"></EsfRadioGroup>
         </div>
       </template>
@@ -68,12 +75,8 @@ const manifest = ref<browser.Manifest.WebExtensionManifest>(browser.runtime.getM
 </script>
 
 <style lang="scss" scoped>
-main {
-  max-width: 680px;
-  margin: auto;
-  padding-inline: 24px;
-}
-
+// ----------
+// Utility
 .sectionItem {
   padding-block: 5rem;
   padding-inline: 3rem;
@@ -85,6 +88,31 @@ main {
 
 .textLight {
   color: var(--esf-secondary-dark);
+}
+
+.selectionLabel {
+  margin-block-end: 3rem;
+}
+
+// ----------
+// Content based
+main {
+  max-width: 680px;
+  margin: auto;
+  padding-inline: 24px;
+}
+
+.general {
+  &-action {
+    display: flex;
+    gap: 2rem;
+  }
+
+  &-subItem {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
 }
 
 .rules-action {

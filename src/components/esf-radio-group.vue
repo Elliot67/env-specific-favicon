@@ -1,14 +1,12 @@
 <template>
-  <div>
-    <EsfRadio
-      v-for="(radio, index) in props.options"
-      :key="index"
-      v-model="baseValue"
-      :label="radio.label"
-      :value="radio.value"
-      :name="name"
-    ></EsfRadio>
-  </div>
+  <EsfRadio
+    v-for="(radio, index) in props.options"
+    :key="index"
+    v-model="baseValue"
+    :label="radio.label"
+    :value="radio.value"
+    :name="name"
+  ></EsfRadio>
 </template>
 
 <script lang="ts" setup>
@@ -42,11 +40,3 @@ const baseValue = computed({
 
 const name = 'name'; // TODO: Rendre dynamique
 </script>
-
-<style lang="scss" scoped>
-div {
-  & > * {
-    margin-block: 3rem;
-  }
-}
-</style>
