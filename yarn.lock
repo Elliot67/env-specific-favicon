@@ -4423,6 +4423,11 @@ vue-demi@*:
   resolved "https://registry.yarnpkg.com/vue-demi/-/vue-demi-0.12.1.tgz#f7e18efbecffd11ab069d1472d7a06e319b4174c"
   integrity sha512-QL3ny+wX8c6Xm1/EZylbgzdoDolye+VpCXRhI2hug9dJTP3OUJ3lmiKN3CsVV3mOJKwFi0nsstbgob0vG7aoIw==
 
+vue-dndrop@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/vue-dndrop/-/vue-dndrop-1.2.2.tgz#807af569b65d5514909ff59e2593ae5c59d74271"
+  integrity sha512-/ipaAycU6oksFNX232DKQwtwBHabPrAQvgbwOxZGuLM65RJZDCI+IzhASCrNUUE2mxHqorV1z7F9xuyv6WjbGw==
+
 vue-eslint-parser@^8.0.1:
   version "8.2.0"
   resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-8.2.0.tgz#8c3990deb901b0d528d99f4d052a831cd1d0284c"

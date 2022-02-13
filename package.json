@@ -47,6 +47,7 @@
     "unplugin-auto-import": "^0.5.11",
     "vite": "^2.6.2",
     "vue": "^3.2.19",
+    "vue-dndrop": "^1.2.2",
     "web-ext": "^6.4.0",
     "webext-bridge": "^5.0.0",
     "webextension-polyfill": "^0.8.0"
