@@ -1,6 +1,5 @@
 <template>
   <main>
-    <textarea>{{ JSON.stringify(rules, null, 2) }}</textarea>
     <EsfSection>
       <template #title>General</template>
       <template #body>
@@ -36,33 +35,36 @@
           behaviour="contain"
           non-drag-area-selector=".rules-rowAction"
           drag-handle-selector=".rules-handler"
+          drag-class="isGhost"
           @dragStart="onDragStart"
           @drop="onDrop"
         >
-          <template v-for="rule in rules" :key="rule.id">
+          <template v-for="(rule, idx) in rules" :key="rule.id">
             <Draggable class="sectionItem rules-item" tag="button" @click="toggleRuleSelection(rule.id)">
-              <div class="rules-row">
+              <div class="rules-row" :class="{ isDisabled: !rule.active }">
                 <div class="rules-actionIcons rules-handler">
                   <img src="/assets/icon-grab.svg" alt="" />
                 </div>
                 <div>
-                  <img src="/assets/icon-512.png" alt="" />
+                  <img src="/assets/icon-512.png" alt="" /><!-- TODO: Precalculate all transformed possibilities -->
                 </div>
-                <div>URL</div>
-                <div>*//*/*/</div>
-                <div>Disabled</div>
-                <Dropdown>
+                <div>{{ lang.rules.type[rule.type] }}</div>
+                <div>{{ rule.testPattern }}</div>
+                <div>{{ rule.active ? 'Active' : 'Disable' }}</div>
+                <VDropdown>
                   <button class="rules-rowAction rules-actionIcons" @click.stop>
                     <img src="/assets/icon-dots.svg" alt="" />
                   </button>
                   <template #popper>
                     <div class="rules-menu">
-                      <button>Disable rule</button>
-                      <button>Move above</button>
-                      <button>Move below</button>
+                      <button v-close-popper @click="toggleRuleState(idx)">
+                        {{ rule.active ? 'Disable' : 'Active' }} rule
+                      </button>
+                      <button v-close-popper>Move above</button>
+                      <button v-close-popper>Move below</button>
                     </div>
                   </template>
-                </Dropdown>
+                </VDropdown>
               </div>
             </Draggable>
             <div v-if="selectedRuleId === rule.id" class="rules-edit">
@@ -117,20 +119,23 @@ import EsfRadioGroup from '~/components/esf-radio-group.vue';
 import EsfSection from '~/components/esf-section.vue';
 import EsfButton from '~/components/esf-button.vue';
 import browser from 'webextension-polyfill';
+// @ts-ignore
 import { Container, Draggable } from 'vue-dndrop';
-import { Dropdown } from 'floating-vue';
+import { applyDragOnReactive } from '~/logic/drag-and-drop';
+import { en as lang } from '~/translations/en';
+import { AppDataRule } from '~/types/app';
 
 const defaultFaviconOptions = [
   {
-    label: 'Google Chrome',
+    label: lang.blankFavicons.chrome,
     value: 'chrome',
   },
   {
-    label: 'Mozilla Firefox',
+    label: lang.blankFavicons.firefox,
     value: 'firefox',
   },
   {
-    label: 'Microsoft Edge',
+    label: lang.blankFavicons.edge,
     value: 'edge',
   },
 ];
@@ -138,36 +143,36 @@ const defaultFavIcon = ref(defaultFaviconOptions[0].value);
 
 const ruleMatchPatternOptions = [
   {
-    label: 'URL',
+    label: lang.rules.type.url,
     value: 'url',
   },
   {
-    label: 'Title',
+    label: lang.rules.type.title,
     value: 'title',
   },
 ];
 
 const ruleColorPositionOptions = [
   {
-    label: 'Top',
+    label: lang.rules.filters.top,
     value: 'top',
   },
   {
-    label: 'Bottom',
+    label: lang.rules.filters.bottom,
     value: 'bottom',
   },
   {
-    label: 'Right',
+    label: lang.rules.filters.right,
     value: 'right',
   },
   {
-    label: 'Left',
+    label: lang.rules.filters.left,
     value: 'left',
   },
 ];
 const manifest = ref<browser.Manifest.WebExtensionManifest>(browser.runtime.getManifest());
 
-const rules = reactive([
+let rules: AppDataRule[] = reactive([
   {
     id: '1',
     active: true,
@@ -201,7 +206,10 @@ function toggleRuleSelection(ruleId: string) {
   } else {
     selectedRuleId.value = ruleId;
   }
-  console.log('start editing rule');
+}
+
+function toggleRuleState(index: number) {
+  rules[index].active = !rules[index].active;
 }
 
 function unselectRule() {
@@ -209,14 +217,13 @@ function unselectRule() {
   // TODO: Might need to backup data or something
 }
 
-function onDragStart(dragResult) {
+function onDragStart(dragResult: any) {
   console.log('drag started, unselect rule', dragResult);
   unselectRule();
 }
 
-function onDrop(dropResult) {
-  console.log(dropResult);
-  // TODO: Apply drag | https://amendx.github.io/vue-dndrop/examples/helpers.html#applydrag
+function onDrop(dropResult: any) {
+  applyDragOnReactive(rules, dropResult);
 }
 </script>
 
@@ -275,12 +282,21 @@ main {
     cursor: pointer;
     width: 100%;
     text-align: start;
+    transition-duration: 0.2s;
+    transition-property: background-color;
+
+    //&:hover,
+    &:focus-visible,
+    &:hover,
+    &.dndrop-ghost {
+      background-color: var(--esf-primary-hover);
+    }
   }
 
   &-row {
     display: grid;
     align-items: center;
-    grid-template-columns: 6rem 6rem 1fr 4fr 1fr 6rem;
+    grid-template-columns: 8rem 6rem 1fr 4fr 1fr 6rem;
     grid-column-gap: 3rem;
 
     & > div {
@@ -289,6 +305,10 @@ main {
 
     img {
       width: 100%;
+    }
+
+    &.isDisabled {
+      color: var(--esf-secondary-dark);
     }
   }
 
@@ -299,6 +319,7 @@ main {
 
   &-handler {
     cursor: grab;
+    width: 6rem;
   }
 
   &-rowAction {
