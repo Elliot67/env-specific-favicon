@@ -46,7 +46,7 @@
                   <img src="/assets/icon-grab.svg" alt="" />
                 </div>
                 <div>
-                  <img src="/assets/icon-512.png" alt="" /><!-- TODO: Precalculate all transformed possibilities -->
+                  <img src="/assets/icon-512.png" alt="" />
                 </div>
                 <div>{{ lang.rules.type[rule.type] }}</div>
                 <div class="rules-pattern">{{ rule.testPattern }}</div>
@@ -76,12 +76,12 @@
                 <EsfRadioGroup v-model="rule.type" :options="ruleMatchPatternOptions"></EsfRadioGroup>
               </div>
               <div class="ruleItem">
-                <h4 class="sectionLabel">Match pattern</h4>
-                // TODO: Add input text
+                <h4 class="sectionLabel">Pattern</h4>
+                <EsfInputText v-model="rule.testPattern" label="Match pattern" placeholder="*.com" />
               </div>
               <div class="ruleItem">
                 <h4 class="sectionLabel">Color</h4>
-                // TODO: Add input color
+                <EsfInputColor v-model="rule.color" label="Color" placeholder="#663399" />
               </div>
               <div class="ruleItem">
                 <h4 class="sectionLabel">Color position</h4>
@@ -128,6 +128,8 @@ import { applyDragOnReactive } from '~/logic/drag-and-drop';
 import { en as lang } from '~/translations/en';
 import { AppDataRule } from '~/types/app';
 import { getEmptyRule } from '~/logic';
+import EsfInputText from '~/components/esf-input-text.vue';
+import EsfInputColor from '~/components/esf-input-color.vue';
 
 const defaultFaviconOptions = [
   {
