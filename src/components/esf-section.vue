@@ -19,5 +19,9 @@ section {
   background-color: var(--esf-primary);
   border-radius: 1rem;
   box-shadow: var(--esf-box-shadow);
+
+  &:last-of-type {
+    margin-bottom: 6rem;
+  }
 }
 </style>

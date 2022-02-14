@@ -49,7 +49,7 @@
                   <img src="/assets/icon-512.png" alt="" /><!-- TODO: Precalculate all transformed possibilities -->
                 </div>
                 <div>{{ lang.rules.type[rule.type] }}</div>
-                <div>{{ rule.testPattern }}</div>
+                <div class="rules-pattern">{{ rule.testPattern }}</div>
                 <div>{{ rule.active ? 'Active' : 'Disable' }}</div>
                 <VDropdown>
                   <button class="rules-rowAction rules-actionIcons" @click.stop>
@@ -60,8 +60,11 @@
                       <button v-close-popper @click="toggleRuleState(idx)">
                         {{ rule.active ? 'Disable' : 'Active' }} rule
                       </button>
-                      <button v-close-popper>Move above</button>
-                      <button v-close-popper>Move below</button>
+                      <button v-close-popper :disabled="idx === 0" @click="moveRule(idx, -1)">Move above</button>
+                      <button v-close-popper :disabled="idx === rules.length - 1" @click="moveRule(idx, 1)">
+                        Move below
+                      </button>
+                      <button v-close-popper @click="removeRule(idx)">Remove rule</button>
                     </div>
                   </template>
                 </VDropdown>
@@ -88,7 +91,7 @@
           </template>
         </Container>
         <div class="sectionItem rules-action">
-          <EsfButton>Add a new rule</EsfButton>
+          <EsfButton @click="addRule">Add a new rule</EsfButton>
         </div>
       </template>
     </EsfSection>
@@ -124,6 +127,7 @@ import { Container, Draggable } from 'vue-dndrop';
 import { applyDragOnReactive } from '~/logic/drag-and-drop';
 import { en as lang } from '~/translations/en';
 import { AppDataRule } from '~/types/app';
+import { getEmptyRule } from '~/logic';
 
 const defaultFaviconOptions = [
   {
@@ -218,12 +222,26 @@ function unselectRule() {
 }
 
 function onDragStart(dragResult: any) {
-  console.log('drag started, unselect rule', dragResult);
   unselectRule();
 }
 
 function onDrop(dropResult: any) {
   applyDragOnReactive(rules, dropResult);
+}
+
+function moveRule(startIndex: number, shift: number) {
+  const item = rules.splice(startIndex, 1)[0];
+  rules.splice(startIndex + shift, 0, item);
+}
+
+function removeRule(idx: number): void {
+  rules.splice(idx, 1);
+}
+
+function addRule(): void {
+  const newRule = getEmptyRule();
+  rules.push(newRule);
+  toggleRuleSelection(newRule.id);
 }
 </script>
 
@@ -320,6 +338,12 @@ main {
   &-handler {
     cursor: grab;
     width: 6rem;
+  }
+
+  &-pattern {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   &-rowAction {
