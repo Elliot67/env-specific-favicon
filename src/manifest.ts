@@ -16,7 +16,6 @@ export async function getManifest(): Promise<Manifest.WebExtensionManifest> {
     description: pkg.description,
     browser_action: {
       default_icon: './assets/icon-512.png',
-      default_popup: './dist/popup/index.html',
     },
     options_ui: {
       page: './dist/options/index.html',

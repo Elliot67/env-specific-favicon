@@ -1,7 +1,7 @@
 export interface AppDataGlobal {
   version: string;
-  blankFavIcon: 'chrome' | 'edge' | 'firefox'; // TODO: Récupérer avec chrome://favicon/ | edge://favicon/
-  tabs: AppDataRule[];
+  blankFavicon: 'chrome' | 'edge' | 'firefox'; // TODO: Récupérer avec chrome://favicon/ | edge://favicon/
+  rules: AppDataRule[];
 }
 
 export interface AppDataRule {

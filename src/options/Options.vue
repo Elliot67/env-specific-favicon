@@ -15,7 +15,7 @@
         </div>
         <div class="sectionItem">
           <h3 class="sectionLabel">Default favicon</h3>
-          <EsfRadioGroup v-model="defaultFavIcon" :options="defaultFaviconOptions"></EsfRadioGroup>
+          <EsfRadioGroup v-model="settings.blankFavicon" :options="defaultFaviconOptions"></EsfRadioGroup>
         </div>
       </template>
     </EsfSection>
@@ -39,7 +39,7 @@
           @dragStart="onDragStart"
           @drop="onDrop"
         >
-          <template v-for="(rule, idx) in rules" :key="rule.id">
+          <template v-for="(rule, idx) in settings.rules" :key="rule.id">
             <Draggable class="sectionItem rules-item" tag="button" @click="toggleRuleSelection(rule.id)">
               <div class="rules-row" :class="{ isDisabled: !rule.active }">
                 <div class="rules-actionIcons rules-handler">
@@ -61,10 +61,10 @@
                         {{ rule.active ? 'Disable' : 'Active' }} rule
                       </button>
                       <button v-close-popper :disabled="idx === 0" @click="moveRule(idx, -1)">Move above</button>
-                      <button v-close-popper :disabled="idx === rules.length - 1" @click="moveRule(idx, 1)">
+                      <button v-close-popper :disabled="idx === settings.rules.length - 1" @click="moveRule(idx, 1)">
                         Move below
                       </button>
-                      <button v-close-popper @click="removeRule(idx)">Remove rule</button>
+                      <button v-close-popper @click="deleteRule(idx)">Remove rule</button>
                     </div>
                   </template>
                 </VDropdown>
@@ -91,7 +91,7 @@
           </template>
         </Container>
         <div class="sectionItem rules-action">
-          <EsfButton @click="addRule">Add a new rule</EsfButton>
+          <EsfButton @click="newRule">Add a new rule</EsfButton>
         </div>
       </template>
     </EsfSection>
@@ -116,8 +116,7 @@
 </template>
 
 <script setup lang="ts">
-//import { storageDemo } from '~/logic/storage';
-import { ref, reactive } from 'vue';
+import { ref } from 'vue';
 import EsfRadioGroup from '~/components/esf-radio-group.vue';
 import EsfSection from '~/components/esf-section.vue';
 import EsfButton from '~/components/esf-button.vue';
@@ -126,10 +125,9 @@ import browser from 'webextension-polyfill';
 import { Container, Draggable } from 'vue-dndrop';
 import { applyDragOnReactive } from '~/logic/drag-and-drop';
 import { en as lang } from '~/translations/en';
-import { AppDataRule } from '~/types/app';
-import { getEmptyRule } from '~/logic';
 import EsfInputText from '~/components/esf-input-text.vue';
 import EsfInputColor from '~/components/esf-input-color.vue';
+import useSettings from '~/composables/useSettings';
 
 const defaultFaviconOptions = [
   {
@@ -145,7 +143,6 @@ const defaultFaviconOptions = [
     value: 'edge',
   },
 ];
-const defaultFavIcon = ref(defaultFaviconOptions[0].value);
 
 const ruleMatchPatternOptions = [
   {
@@ -176,34 +173,13 @@ const ruleColorPositionOptions = [
     value: 'left',
   },
 ];
+
 const manifest = ref<browser.Manifest.WebExtensionManifest>(browser.runtime.getManifest());
 
-let rules: AppDataRule[] = reactive([
-  {
-    id: '1',
-    active: true,
-    type: 'url',
-    testPattern: 'Je suis le test pattern',
-    filter: 'top',
-    color: 'red',
-  },
-  {
-    id: '2',
-    active: true,
-    type: 'url',
-    testPattern: 'Je suis le test pattern',
-    filter: 'top',
-    color: 'red',
-  },
-  {
-    id: '3',
-    active: true,
-    type: 'url',
-    testPattern: 'Je suis le test pattern',
-    filter: 'top',
-    color: 'red',
-  },
-]);
+const { settings, load, toggleRuleState, moveRule, deleteRule, addRule } = useSettings();
+
+load();
+
 const selectedRuleId = ref<string | null>(null);
 
 function toggleRuleSelection(ruleId: string) {
@@ -214,13 +190,8 @@ function toggleRuleSelection(ruleId: string) {
   }
 }
 
-function toggleRuleState(index: number) {
-  rules[index].active = !rules[index].active;
-}
-
 function unselectRule() {
   selectedRuleId.value = null;
-  // TODO: Might need to backup data or something
 }
 
 function onDragStart(dragResult: any) {
@@ -228,22 +199,12 @@ function onDragStart(dragResult: any) {
 }
 
 function onDrop(dropResult: any) {
-  applyDragOnReactive(rules, dropResult);
+  applyDragOnReactive(settings.rules, dropResult);
 }
 
-function moveRule(startIndex: number, shift: number) {
-  const item = rules.splice(startIndex, 1)[0];
-  rules.splice(startIndex + shift, 0, item);
-}
-
-function removeRule(idx: number): void {
-  rules.splice(idx, 1);
-}
-
-function addRule(): void {
-  const newRule = getEmptyRule();
-  rules.push(newRule);
-  toggleRuleSelection(newRule.id);
+function newRule(): void {
+  const rule = addRule();
+  toggleRuleSelection(rule.id);
 }
 </script>
 
