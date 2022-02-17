@@ -1,17 +1,12 @@
 import { AsyncStorage, getEmptyRule } from '~/logic';
 import { AppDataGlobal, AppDataRule } from '~/types/app';
 import { reactive, toRaw, watch } from 'vue';
-
-const initialState: AppDataGlobal = {
-  version: '1.0', // TODO: Get version from manifest
-  blankFavicon: 'chrome',
-  rules: [],
-};
+import { defaultSettings } from '~/configuration/settings';
 
 const STORAGE_KEY = 'env-specific-favicon';
 
 export default function useSettings() {
-  const settings = reactive<AppDataGlobal>({ ...initialState });
+  const settings = reactive<AppDataGlobal>({ ...defaultSettings });
 
   async function load(): Promise<void> {
     const storageSettings = await AsyncStorage.getItem<AppDataGlobal | undefined>(STORAGE_KEY);
@@ -25,8 +20,8 @@ export default function useSettings() {
   }
 
   async function reset() {
-    settings.version = initialState.version;
-    settings.blankFavicon = initialState.blankFavicon;
+    settings.version = defaultSettings.version;
+    settings.blankFavicon = defaultSettings.blankFavicon;
     settings.rules = [];
     save();
   }

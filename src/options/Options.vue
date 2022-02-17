@@ -46,7 +46,7 @@
                   <img src="/assets/icon-grab.svg" alt="" />
                 </div>
                 <div>
-                  <img src="/assets/icon-512.png" alt="" />
+                  <img :src="icons[rule.id]?.icon" alt="" />
                 </div>
                 <div>{{ lang.rules.type[rule.type] }}</div>
                 <div class="rules-pattern">{{ rule.testPattern }}</div>
@@ -116,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, reactive, watch } from 'vue';
 import EsfRadioGroup from '~/components/esf-radio-group.vue';
 import EsfSection from '~/components/esf-section.vue';
 import EsfButton from '~/components/esf-button.vue';
@@ -128,6 +128,9 @@ import { en as lang } from '~/translations/en';
 import EsfInputText from '~/components/esf-input-text.vue';
 import EsfInputColor from '~/components/esf-input-color.vue';
 import useSettings from '~/composables/useSettings';
+import { sendMessage } from 'webext-bridge';
+import { AppDataRule } from '~/types/app';
+import { isDef } from '~/logic/utils';
 
 const defaultFaviconOptions = [
   {
@@ -179,6 +182,31 @@ const manifest = ref<browser.Manifest.WebExtensionManifest>(browser.runtime.getM
 const { settings, load, toggleRuleState, moveRule, deleteRule, addRule } = useSettings();
 
 load();
+
+async function generateIcon(index: number): Promise<string> {
+  //@ts-ignore
+  const { favicon } = await sendMessage('get-favicon', settings.rules[index]);
+  return favicon;
+}
+
+function generateIconHash(rule: AppDataRule): string {
+  return rule.color + rule.filter + settings.blankFavicon;
+}
+
+const icons = reactive<Record<string, { icon: string; hash: string }>>({});
+
+watch(settings, async () => {
+  settings.rules.forEach((rule, idx) => {
+    let renewIcon = !isDef(icons[rule.id]);
+    if (!renewIcon) {
+      const { hash } = icons[rule.id];
+      renewIcon = hash !== generateIconHash(rule);
+    }
+    if (renewIcon) {
+      generateIcon(idx).then((favicon) => (icons[rule.id] = { icon: favicon, hash: generateIconHash(rule) }));
+    }
+  });
+});
 
 const selectedRuleId = ref<string | null>(null);
 
