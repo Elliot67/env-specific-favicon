@@ -1,5 +1,5 @@
 import { sendMessage, onMessage } from 'webext-bridge';
-import { blankFavicons } from '~/configuration/settings';
+import { baseFavicons } from '~/configuration/settings';
 import { drawFilterOnCanvas, loadImage, SettingsStorage, createCanvasWithImage } from '~/logic';
 import { isNull, isUndefined } from '~/utils';
 import { AppDataGlobal, AppDataRule } from '~/types/app';
@@ -66,15 +66,19 @@ function run() {
       return false;
     }
 
-    for (const item of SETTINGS.rules) {
-      const value = prop[item.type];
+    for (const rule of SETTINGS.rules) {
+      if (!rule.active) {
+        continue;
+      }
+
+      const value = prop[rule.type];
       if (isUndefined(value)) {
         continue;
       }
 
-      const regex = new RegExp(`/${item.testPattern}/`);
+      const regex = new RegExp(`/${rule.testPattern}/`);
       if (regex.test(value)) {
-        return item;
+        return rule;
       }
     }
 
@@ -83,7 +87,7 @@ function run() {
 
   async function getNewFavicon(item: AppDataRule, url?: string): Promise<string> {
     if (isUndefined(url)) {
-      url = blankFavicons[SETTINGS.blankFavicon];
+      url = baseFavicons[SETTINGS.favicon.type]; // TODO: Manage custom one
     }
 
     const $img = await loadImage(url);

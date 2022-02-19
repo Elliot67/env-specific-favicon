@@ -1,6 +1,9 @@
 export interface AppDataGlobal {
   version: string;
-  blankFavicon: 'chrome' | 'edge' | 'firefox'; // TODO: Récupérer avec chrome://favicon/ | edge://favicon/
+  favicon: {
+    type: 'global' | 'earth' | 'custom';
+    custom: string;
+  };
   rules: AppDataRule[];
 }
 

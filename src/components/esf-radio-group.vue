@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineEmits, defineProps, PropType, computed } from 'vue';
+import { PropType, computed } from 'vue';
 import { getId } from '~/logic/counter';
 import EsfRadio from './esf-radio.vue';
 

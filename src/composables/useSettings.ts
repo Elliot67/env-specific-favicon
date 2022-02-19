@@ -9,13 +9,13 @@ export default function useSettings() {
   async function load(): Promise<void> {
     const storageSettings = await SettingsStorage.getItem();
     settings.version = storageSettings.version;
-    settings.blankFavicon = storageSettings.blankFavicon;
+    settings.favicon = storageSettings.favicon;
     settings.rules = storageSettings.rules;
   }
 
   async function reset() {
     settings.version = defaultSettings.version;
-    settings.blankFavicon = defaultSettings.blankFavicon;
+    settings.favicon = defaultSettings.favicon;
     settings.rules = [];
   }
 

@@ -10,7 +10,7 @@
 
 <script lang="ts" setup>
 import { getId } from '~/logic';
-import { defineProps, defineEmits, computed } from 'vue';
+import { computed } from 'vue';
 
 const props = defineProps({
   modelValue: {

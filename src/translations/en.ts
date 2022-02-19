@@ -1,10 +1,10 @@
 import { LangInterface } from '~/types/lang';
 
 export const en: LangInterface = {
-  blankFavicons: {
-    chrome: 'Google Chrome',
-    firefox: 'Mozilla Firefox',
-    edge: 'Microsoft Edge',
+  favicon: {
+    global: 'Global',
+    earth: 'Earth',
+    custom: 'Custom',
   },
   rules: {
     type: {

@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, defineEmits, computed } from 'vue';
+import { computed } from 'vue';
 import { getId } from '~/logic/counter';
 
 const props = defineProps({

@@ -15,7 +15,18 @@
         </div>
         <div class="sectionItem">
           <h3 class="sectionLabel">Default favicon</h3>
-          <EsfRadioGroup v-model="settings.blankFavicon" :options="defaultFaviconOptions"></EsfRadioGroup>
+          <p class="sectionItemDescription">
+            If you want to keep your fallback browser favicon, you have to choose 'custom' and upload the image. More
+            details on how to get the original file can be found in
+            <a href="https://github.com/Elliot67/env-specific-favicon">the repository readme</a>.
+          </p>
+          <EsfRadioGroup v-model="settings.favicon.type" :options="faviconOptions"></EsfRadioGroup>
+          <template v-if="settings.favicon.type === 'custom'">
+            <p class="textLight inputFileHint">
+              Provide a small size square image, an svg or a 48px width image is recommended.
+            </p>
+            <EsfInputFile v-model="settings.favicon.custom" label="Click or drag & drop your favicon" />
+          </template>
         </div>
       </template>
     </EsfSection>
@@ -131,19 +142,20 @@ import useSettings from '~/composables/useSettings';
 import { sendMessage } from 'webext-bridge';
 import { AppDataRule } from '~/types/app';
 import { isDef } from '~/utils';
+import EsfInputFile from '~/components/esf-input-file.vue';
 
-const defaultFaviconOptions = [
+const faviconOptions = [
   {
-    label: lang.blankFavicons.chrome,
-    value: 'chrome',
+    label: lang.favicon.global,
+    value: 'global',
   },
   {
-    label: lang.blankFavicons.firefox,
-    value: 'firefox',
+    label: lang.favicon.earth,
+    value: 'earth',
   },
   {
-    label: lang.blankFavicons.edge,
-    value: 'edge',
+    label: lang.favicon.custom,
+    value: 'custom',
   },
 ];
 
@@ -190,7 +202,12 @@ async function generateIcon(index: number): Promise<string> {
 }
 
 function generateIconHash(rule: AppDataRule): string {
-  return rule.color + rule.filter + settings.blankFavicon;
+  let hash = rule.color + rule.filter + settings.favicon.type;
+  if (settings.favicon.type === 'custom') {
+    // TODO: Hash le custom pour pas avoir tout le data uri
+    hash += settings.favicon.custom;
+  }
+  return hash;
 }
 
 const icons = reactive<Record<string, { icon: string; hash: string }>>({});
@@ -248,6 +265,11 @@ function newRule(): void {
   }
 }
 
+.sectionItemDescription {
+  color: var(--esf-secondary-dark);
+  margin-block-end: 2rem;
+}
+
 .ruleItem {
   padding-block: 5rem;
   padding-inline: 3rem;
@@ -284,6 +306,11 @@ main {
     align-items: baseline;
     justify-content: space-between;
   }
+}
+
+.inputFileHint {
+  margin-block-start: 4rem;
+  margin-block-end: 2rem;
 }
 
 .rules {
