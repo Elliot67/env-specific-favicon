@@ -1,5 +1,5 @@
 import { sendMessage, onMessage } from 'webext-bridge';
-import { baseFavicons } from '~/configuration/settings';
+import { baseFavicons, defaultSettings } from '~/configuration/settings';
 import { drawFilterOnCanvas, loadImage, SettingsStorage, createCanvasWithImage } from '~/logic';
 import { isNull, isUndefined } from '~/utils';
 import { AppDataGlobal, AppDataRule } from '~/types/app';
@@ -85,19 +85,33 @@ function run() {
     return false;
   }
 
+  function getFallbackFavicon(): string {
+    const type = SETTINGS.favicon.type;
+    if (type === 'custom') {
+      return SETTINGS.favicon.custom.length > 0 ? SETTINGS.favicon.custom : baseFavicons[defaultSettings.favicon.type];
+    } else {
+      return baseFavicons[type];
+    }
+  }
+
   async function getNewFavicon(item: AppDataRule, url?: string): Promise<string> {
     if (isUndefined(url)) {
-      url = baseFavicons[SETTINGS.favicon.type]; // TODO: Manage custom one
+      url = getFallbackFavicon();
     }
 
-    const $img = await loadImage(url);
-    const drawingParams = createCanvasWithImage($img);
-    if (isNull(drawingParams)) {
-      console.warn('fallback on the default favicon');
-      return url;
+    try {
+      const $img = await loadImage(url);
+      const drawingParams = createCanvasWithImage($img);
+      if (isNull(drawingParams)) {
+        console.warn('fallback on the default favicon');
+        return url;
+      }
+      const { $canvas, ctx } = drawingParams;
+      drawFilterOnCanvas($canvas, ctx, item.color, item.filter);
+      return $canvas.toDataURL('image/png');
+    } catch (e) {
+      console.error(e);
+      return '';
     }
-    const { $canvas, ctx } = drawingParams;
-    drawFilterOnCanvas($canvas, ctx, item.color, item.filter);
-    return $canvas.toDataURL('image/png');
   }
 }

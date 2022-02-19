@@ -141,7 +141,7 @@ import EsfInputColor from '~/components/esf-input-color.vue';
 import useSettings from '~/composables/useSettings';
 import { sendMessage } from 'webext-bridge';
 import { AppDataRule } from '~/types/app';
-import { isDef } from '~/utils';
+import { isDef, throttle, hashString } from '~/utils';
 import EsfInputFile from '~/components/esf-input-file.vue';
 
 const faviconOptions = [
@@ -204,26 +204,29 @@ async function generateIcon(index: number): Promise<string> {
 function generateIconHash(rule: AppDataRule): string {
   let hash = rule.color + rule.filter + settings.favicon.type;
   if (settings.favicon.type === 'custom') {
-    // TODO: Hash le custom pour pas avoir tout le data uri
-    hash += settings.favicon.custom;
+    hash += hashString(settings.favicon.custom);
   }
   return hash;
 }
 
 const icons = reactive<Record<string, { icon: string; hash: string }>>({});
 
-watch(settings, async () => {
-  settings.rules.forEach((rule, idx) => {
-    let renewIcon = !isDef(icons[rule.id]);
-    if (!renewIcon) {
-      const { hash } = icons[rule.id];
-      renewIcon = hash !== generateIconHash(rule);
-    }
-    if (renewIcon) {
-      generateIcon(idx).then((favicon) => (icons[rule.id] = { icon: favicon, hash: generateIconHash(rule) }));
-    }
-  });
-});
+const throttledRenewIcons = throttle(async () => {
+  // Waiting for background page to get the update of the last configuration
+  window.setTimeout(() => {
+    settings.rules.forEach((rule, idx) => {
+      let renewIcon = !isDef(icons[rule.id]);
+      if (!renewIcon) {
+        const { hash } = icons[rule.id];
+        renewIcon = hash !== generateIconHash(rule);
+      }
+      if (renewIcon) {
+        generateIcon(idx).then((favicon) => (icons[rule.id] = { icon: favicon, hash: generateIconHash(rule) }));
+      }
+    });
+  }, 300);
+}, 500);
+watch(settings, throttledRenewIcons);
 
 const selectedRuleId = ref<string | null>(null);
 

@@ -25,3 +25,34 @@ export function isDef<T>(data: T | null | undefined | ''): data is T {
 export function isOdd(num: number): boolean {
   return !!(num % 2);
 }
+
+export const throttle = (fn: any, delay: number) => {
+  let timeout: null | number = null;
+  let needEndCall = false;
+
+  return () => {
+    if (timeout === null) {
+      fn();
+      timeout = window.setTimeout(() => {
+        if (needEndCall) {
+          fn();
+        }
+        timeout = null;
+        needEndCall = false;
+      }, delay);
+    } else {
+      needEndCall = true;
+    }
+  };
+};
+
+// https://gist.github.com/jlevy/c246006675becc446360a798e2b2d781
+export function hashString(str: string) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash &= hash; // Convert to 32bit integer
+  }
+  return new Uint32Array([hash])[0].toString(36);
+}

@@ -11,6 +11,9 @@ export async function loadImage(imageUrl: string): Promise<HTMLImageElement> {
       },
       { passive: true }
     );
+    $img.addEventListener('error', (e) => {
+      return reject(e);
+    });
     $img.src = imageUrl;
   });
 }
