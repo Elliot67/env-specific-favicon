@@ -130,7 +130,7 @@ import EsfInputColor from '~/components/esf-input-color.vue';
 import useSettings from '~/composables/useSettings';
 import { sendMessage } from 'webext-bridge';
 import { AppDataRule } from '~/types/app';
-import { isDef } from '~/logic/utils';
+import { isDef } from '~/utils';
 
 const defaultFaviconOptions = [
   {

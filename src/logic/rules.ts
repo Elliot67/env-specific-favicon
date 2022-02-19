@@ -1,5 +1,5 @@
 import { AppDataRule } from '~/types/app';
-import { generateId } from './utils';
+import { generateId } from '~/utils';
 
 export function getEmptyRule(): AppDataRule {
   return {
