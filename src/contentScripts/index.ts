@@ -1,22 +1,9 @@
 import { onMessage } from 'webext-bridge';
-import { isNull, isDef } from '~/utils';
+import { isNull } from '~/utils';
 
 // Firefox `browser.tabs.executeScript()` requires scripts return a primitive value
-(async () => {
-  let RUN_MANIFEST_REPLACEMENT = false;
-  let MANIFEST_URL: string;
-
-  const $manifest = document.querySelector('link[rel="manifest"]');
-  if ($manifest) {
-    const originalManifestUrl = $manifest?.getAttribute('href');
-    $manifest.removeAttribute('href');
-    if (isDef(originalManifestUrl)) {
-      RUN_MANIFEST_REPLACEMENT = true;
-      MANIFEST_URL = originalManifestUrl;
-    }
-  }
-
-  onMessage('update-favicon', async ({ data }) => {
+(() => {
+  onMessage('update-favicon', ({ data }) => {
     const $head = document.querySelector('head');
     const LINK_ID = 'env-specific-favicon';
 
@@ -42,16 +29,5 @@ import { isNull, isDef } from '~/utils';
     }
 
     $head.prepend($newFavicon);
-
-    // Replace the manifest
-    if (RUN_MANIFEST_REPLACEMENT) {
-      const manifest = await fetch(MANIFEST_URL).then((r) => r.json());
-      manifest.icons.forEach((icon: any) => {
-        icon.src = favicon; // TODO: Provide the right favicon size for each icon
-      });
-      const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-      const shortManifestUrl = URL.createObjectURL(blob);
-      ($manifest as Element).setAttribute('href', shortManifestUrl);
-    }
   });
 })();

@@ -1,7 +1,7 @@
 import { sendMessage, onMessage } from 'webext-bridge';
 import { baseFavicons, defaultSettings } from '~/configuration/settings';
 import { drawFilterOnCanvas, loadImage, SettingsStorage, createCanvasWithImage } from '~/logic';
-import { isNull, isUndefined } from '~/utils';
+import { isDef, isNull, isUndefined } from '~/utils';
 import { AppDataGlobal, AppDataRule } from '~/types/app';
 
 // only on dev mode
@@ -32,8 +32,11 @@ SettingsStorage.getItem().then((storeSettings) => {
 });
 
 function run() {
-  browser.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
-    if (changeInfo.status === 'complete') {
+  browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+    const isCompleteEvent = changeInfo.status === 'complete';
+    const isHttpUrl = ['http://', 'https://'].some((s) => tab?.url?.startsWith(s));
+    if (isCompleteEvent && isHttpUrl) {
+      console.log(changeInfo, tab);
       await manageTabUpdate(tabId);
     }
   });
@@ -47,19 +50,23 @@ function run() {
   async function manageTabUpdate(tabId: number) {
     try {
       const tab = await browser.tabs.get(tabId);
-      console.log(tab.url);
+      if (isDef(tab.favIconUrl)) {
+        console.warn('no favicon found on the tab', tab);
+      }
 
       const match = getMatch({ url: tab.url, title: tab.title });
       if (match === false) {
-        console.log('no match for this tab');
+        console.warn('no match for this tab');
         return;
       }
 
       const favicon = await getNewFavicon(match, tab.favIconUrl);
-      sendMessage('update-favicon', { favicon: favicon }, `content-script@${tabId}`);
-      console.log('just sended a message with ', favicon);
+
+      const message = { favicon: favicon };
+      sendMessage('update-favicon', message, `content-script@${tabId}`);
+      console.log('send message from background script', message);
     } catch (e) {
-      console.warn('error while retrieving tab informations or while generating the favicon', e);
+      console.warn('error while retrieving tab informations/generating the favicon', e);
     }
   }
 
@@ -97,23 +104,18 @@ function run() {
   }
 
   async function getNewFavicon(item: AppDataRule, url?: string): Promise<string> {
-    if (isUndefined(url)) {
+    if (!isDef(url)) {
       url = getFallbackFavicon();
     }
 
-    try {
-      const $img = await loadImage(url);
-      const drawingParams = createCanvasWithImage($img);
-      if (isNull(drawingParams)) {
-        console.warn('fallback on the default favicon');
-        return url;
-      }
-      const { $canvas, ctx } = drawingParams;
-      drawFilterOnCanvas($canvas, ctx, item.color, item.filter);
-      return $canvas.toDataURL('image/png');
-    } catch (e) {
-      console.error(e);
-      return '';
+    const $img = await loadImage(url);
+    const drawingParams = createCanvasWithImage($img);
+    if (isNull(drawingParams)) {
+      console.warn('fallback on the default favicon');
+      return url;
     }
+    const { $canvas, ctx } = drawingParams;
+    drawFilterOnCanvas($canvas, ctx, item.color, item.filter);
+    return $canvas.toDataURL('image/png');
   }
 }
