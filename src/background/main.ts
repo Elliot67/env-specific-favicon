@@ -8,6 +8,8 @@ import { AppDataGlobal, AppDataRule } from '~/types/app';
 if (import.meta.hot) {
   // @ts-expect-error for background HMR
   import('/@vite/client');
+  // load latest content script
+  import('./contentScriptHMR');
 }
 
 browser.runtime.onInstalled.addListener((): void => {
