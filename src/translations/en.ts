@@ -14,8 +14,8 @@ export const en: LangInterface = {
     filters: {
       top: 'Top',
       bottom: 'Bottom',
-      right: 'Right',
-      left: 'Left',
+      cover: 'Cover',
+      fill: 'Fill',
     },
   },
 };

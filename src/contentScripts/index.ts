@@ -9,11 +9,21 @@ import { isNull, isUndefined } from '~/utils';
     return;
   }
 
-  const $links = document.head.querySelectorAll<HTMLLinkElement>(`
+  // Functions
+  const get$Links = (): NodeListOf<HTMLLinkElement> => {
+    return document.head.querySelectorAll<HTMLLinkElement>(`
     link:not(#env-specific-favicon):not([rel="mask-icon"])[rel*="icon"],
     link[rel="apple-touch-startup-image"]
     `);
+  };
 
+  const removeOtherIcons = ($links: NodeListOf<HTMLLinkElement>): void => {
+    $links.forEach(($link) => {
+      $link.remove();
+    });
+  };
+
+  const $links = get$Links();
   const links = Array.from($links).reduce((acc, $l) => {
     const href = $l.href;
     if (!isUndefined(href) && !acc.includes(href)) {
@@ -36,10 +46,15 @@ import { isNull, isUndefined } from '~/utils';
   $newFavicon.setAttribute('id', LINK_ID);
   $newFavicon.setAttribute('rel', 'icon');
   $newFavicon.setAttribute('href', data.favicon);
+  $head.append($newFavicon);
+  removeOtherIcons($links);
 
-  $links.forEach(($link) => {
-    $link.remove();
+  // Remove icons added on the fly
+  const observer = new MutationObserver((mutations) => {
+    if (mutations.some((m) => m.addedNodes.length > 0)) {
+      const $links = get$Links();
+      removeOtherIcons($links);
+    }
   });
-
-  $head.prepend($newFavicon);
+  observer.observe(document.head, { childList: true, attributeFilter: [] });
 })();

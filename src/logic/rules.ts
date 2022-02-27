@@ -6,8 +6,8 @@ export function getEmptyRule(): AppDataRule {
     id: generateId(),
     active: true,
     type: 'url',
-    testPattern: '',
-    filter: 'top',
+    testPattern: '*',
+    filter: 'cover',
     color: '#ff00ff',
   };
 }

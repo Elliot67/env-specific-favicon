@@ -32,7 +32,7 @@ export async function getManifest(): Promise<Manifest.WebExtensionManifest> {
     permissions: ['tabs', 'storage', 'activeTab', 'http://*/', 'https://*/'],
     content_scripts: [
       {
-        run_at: 'document_start',
+        run_at: 'document_idle',
         matches: ['http://*/*', 'https://*/*'],
         js: ['./dist/contentScripts/index.global.js'],
       },

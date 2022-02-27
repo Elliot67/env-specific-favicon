@@ -42,38 +42,25 @@ export function drawFilterOnCanvas(
 ): void {
   const width = $canvas.width;
   const height = $canvas.height;
-  ctx.fillStyle = color;
 
   switch (filter) {
     case 'top':
+      ctx.fillStyle = color;
       ctx.fillRect(0, 0, width, Math.floor(height / 4));
       return;
-    case 'right':
-      ctx.fillRect(Math.floor(width * 0.75), 0, Math.floor(width / 4), height);
-      return;
     case 'bottom':
+      ctx.fillStyle = color;
       ctx.fillRect(0, Math.floor(height * 0.75), width, Math.floor(height / 4));
       return;
-    case 'left':
-      ctx.fillRect(0, 0, Math.floor(width / 4), height);
+    case 'cover':
+      ctx.fillStyle = color + 'B3';
+      ctx.globalCompositeOperation = 'source-atop';
+      ctx.fillRect(0, 0, width, height);
       return;
-    /*
-      case 'cover':
-        ctx.globalAlpha = 0.5;
-        ctx.fillRect(0, 0, width, height);
-        return;
-      case 'replace':
-        ctx.globalCompositeOperation = 'source-in';
-        ctx.fillRect(0, 0, width, height);
-        return;
-      case 'background':
-        ctx.globalCompositeOperation = 'destination-over';
-        ctx.fillRect(0, 0, width, height);
-        return;
-      case 'xor-top':
-        ctx.globalCompositeOperation = 'xor';
-        ctx.fillRect(0, 0, width, Math.floor(height / 4));
-        return;
-      */
+    case 'fill':
+      ctx.fillStyle = color;
+      ctx.globalCompositeOperation = 'source-in';
+      ctx.fillRect(0, 0, width, height);
+      return;
   }
 }

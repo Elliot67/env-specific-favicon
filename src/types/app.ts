@@ -12,6 +12,6 @@ export interface AppDataRule {
   active: boolean;
   type: 'url' | 'title';
   testPattern: string;
-  filter: 'top' | 'bottom' | 'right' | 'left'; // TODO: Add more
+  filter: 'top' | 'bottom' | 'cover' | 'fill';
   color: string;
 }

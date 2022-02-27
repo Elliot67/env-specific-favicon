@@ -180,12 +180,12 @@ const ruleColorPositionOptions = [
     value: 'bottom',
   },
   {
-    label: lang.rules.filters.right,
-    value: 'right',
+    label: lang.rules.filters.cover,
+    value: 'cover',
   },
   {
-    label: lang.rules.filters.left,
-    value: 'left',
+    label: lang.rules.filters.fill,
+    value: 'fill',
   },
 ];
 
