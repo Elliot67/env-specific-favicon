@@ -1,11 +1,14 @@
 export interface AppDataGlobal {
   version: string;
   favicon: {
-    type: 'global' | 'earth' | 'custom';
+    type: IconsTypeSettings;
     custom: string;
   };
   rules: AppDataRule[];
 }
+
+export type IconsTypeSettings = 'global' | 'earth' | 'custom';
+export type IconsTypeFull = 'global_dark' | 'global_light' | 'earth_dark' | 'earth_light' | 'custom';
 
 export interface AppDataRule {
   id: string;

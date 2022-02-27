@@ -88,12 +88,17 @@ function run() {
   }
 
   function getFallbackFavicon(): string {
-    const type = SETTINGS.favicon.type;
+    let type = SETTINGS.favicon.type;
     if (type === 'custom') {
-      return SETTINGS.favicon.custom.length > 0 ? SETTINGS.favicon.custom : baseFavicons[defaultSettings.favicon.type];
-    } else {
-      return baseFavicons[type];
+      if (SETTINGS.favicon.custom.length > 0) {
+        return SETTINGS.favicon.custom;
+      } else {
+        type = defaultSettings.favicon.type as 'earth'; // FIXME: Let typescript type with the value
+      }
     }
+
+    const themeSuffix = window?.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    return baseFavicons[`${type}_${themeSuffix}`];
   }
 
   async function getNewFavicon(item: AppDataRule, url?: string): Promise<string> {
