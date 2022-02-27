@@ -1,33 +1,45 @@
-import { onMessage } from 'webext-bridge';
-import { isNull } from '~/utils';
+import { sendMessage } from 'webext-bridge';
+import { isNull, isUndefined } from '~/utils';
 
-// Firefox `browser.tabs.executeScript()` requires scripts return a primitive value
-(() => {
-  onMessage('update-favicon', ({ data }) => {
-    const $head = document.querySelector('head');
-    const LINK_ID = 'env-specific-favicon';
+(async () => {
+  const $head = document.head;
+  const LINK_ID = 'env-specific-favicon';
 
-    if (isNull($head) || $head.querySelector(`#${LINK_ID}`)) {
-      return;
+  if (isNull($head) || $head.querySelector(`#${LINK_ID}`)) {
+    return;
+  }
+
+  const $links = document.head.querySelectorAll<HTMLLinkElement>(`
+    link:not(#env-specific-favicon):not([rel="mask-icon"])[rel*="icon"],
+    link[rel="apple-touch-startup-image"]
+    `);
+
+  const links = Array.from($links).reduce((acc, $l) => {
+    const href = $l.href;
+    if (!isUndefined(href) && !acc.includes(href)) {
+      const operation = href.endsWith('.svg') ? 'unshift' : 'push';
+      acc[operation](href);
     }
+    return acc;
+  }, [] as string[]);
 
-    const { favicon } = data;
+  if (links.length === 0) {
+    links.push(window.location.origin + '/favicon.ico');
+  }
 
-    // Create a new favicon link.
-    const $newFavicon = document.createElement('link');
-    $newFavicon.setAttribute('id', LINK_ID);
-    $newFavicon.setAttribute('rel', 'icon');
-    $newFavicon.setAttribute('href', favicon);
+  const data = await sendMessage('get-favicon-from-links', links, 'background');
+  if (isNull(data)) {
+    return;
+  }
 
-    // Remove current favicon
-    const $links = $head.querySelectorAll(
-      `link:not(#${LINK_ID})[rel*="icon"], link:not(#${LINK_ID})[rel="apple-touch-startup-image"]`
-    );
-    // @ts-ignore
-    for (const $link of $links) {
-      $link.remove();
-    }
+  const $newFavicon = document.createElement('link');
+  $newFavicon.setAttribute('id', LINK_ID);
+  $newFavicon.setAttribute('rel', 'icon');
+  $newFavicon.setAttribute('href', data.favicon);
 
-    $head.prepend($newFavicon);
+  $links.forEach(($link) => {
+    $link.remove();
   });
+
+  $head.prepend($newFavicon);
 })();

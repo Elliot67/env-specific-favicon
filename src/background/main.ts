@@ -1,4 +1,4 @@
-import { sendMessage, onMessage } from 'webext-bridge';
+import { onMessage } from 'webext-bridge';
 import { baseFavicons, defaultSettings } from '~/configuration/settings';
 import { drawFilterOnCanvas, loadImage, SettingsStorage, createCanvasWithImage } from '~/logic';
 import { isDef, isNull, isUndefined } from '~/utils';
@@ -32,43 +32,36 @@ SettingsStorage.getItem().then((storeSettings) => {
 });
 
 function run() {
-  browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-    const isCompleteEvent = changeInfo.status === 'complete';
-    const isHttpUrl = ['http://', 'https://'].some((s) => tab?.url?.startsWith(s));
-    if (isCompleteEvent && isHttpUrl) {
-      console.log(changeInfo, tab);
-      await manageTabUpdate(tabId);
-    }
-  });
-
   // Generate favicon for Options page
   onMessage('get-favicon', async ({ data }) => {
     const rule = data as unknown as AppDataRule;
     return { favicon: await getNewFavicon(rule) };
   });
 
-  async function manageTabUpdate(tabId: number) {
-    try {
-      const tab = await browser.tabs.get(tabId);
-      if (isDef(tab.favIconUrl)) {
-        console.warn('no favicon found on the tab', tab);
-      }
-
-      const match = getMatch({ url: tab.url, title: tab.title });
-      if (match === false) {
-        console.warn('no match for this tab');
-        return;
-      }
-
-      const favicon = await getNewFavicon(match, tab.favIconUrl);
-
-      const message = { favicon: favicon };
-      sendMessage('update-favicon', message, `content-script@${tabId}`);
-      console.log('send message from background script', message);
-    } catch (e) {
-      console.warn('error while retrieving tab informations/generating the favicon', e);
+  // Generate favicon for the content script
+  onMessage('get-favicon-from-links', async ({ data: links, sender }) => {
+    const tab = await browser.tabs.get(sender.tabId);
+    const match = getMatch({ url: tab.url, title: tab.title });
+    if (match === false) {
+      console.warn('no match for this tab');
+      return null;
     }
-  }
+
+    // Add fallback icon
+    links.push('');
+
+    for (const link of links) {
+      try {
+        const favicon = await getNewFavicon(match, link);
+        return { favicon };
+      } catch (e) {
+        console.warn('error while genereting the favicon with this link, trying the next link', e);
+      }
+    }
+
+    console.warn('could not generate the favicon with any of the links', links);
+    return null;
+  });
 
   function getMatch(prop: { url: string | undefined; title: string | undefined }): AppDataRule | false {
     if (isUndefined(prop.url) && isUndefined(prop.title)) {
