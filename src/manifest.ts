@@ -12,8 +12,10 @@ export async function getManifest(): Promise<Manifest.WebExtensionManifest> {
     author: 'Elliot Lintz',
     version: pkg.version,
     description: pkg.description,
+    homepage_url: 'https://github.com/Elliot67/env-specific-favicon',
     browser_action: {
       default_icon: './assets/icon-512.png',
+      default_popup: './dist/popup/index.html',
     },
     options_ui: {
       page: './dist/options/index.html',

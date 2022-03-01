@@ -1,5 +1,5 @@
 <template>
-  <main>
+  <main class="pageContainer">
     <EsfSection>
       <template #title>General</template>
       <template #body>
@@ -31,7 +31,7 @@
       </template>
     </EsfSection>
     <EsfSection>
-      <template #title>Règles de remplacement</template>
+      <template #title>Rules</template>
       <template #body>
         <div class="sectionItem rules-row textLight">
           <div></div>
@@ -62,23 +62,25 @@
                 <div>{{ lang.rules.type[rule.type] }}</div>
                 <div class="rules-pattern">{{ rule.testPattern }}</div>
                 <div>{{ rule.active ? 'Active' : 'Disable' }}</div>
-                <VDropdown>
-                  <button class="rules-rowAction rules-actionIcons" @click.stop>
-                    <img src="/assets/icon-dots.svg" alt="" />
-                  </button>
-                  <template #popper>
-                    <div class="rules-menu">
-                      <button v-close-popper @click="toggleRuleState(idx)">
-                        {{ rule.active ? 'Disable' : 'Active' }} rule
-                      </button>
-                      <button v-close-popper :disabled="idx === 0" @click="moveRule(idx, -1)">Move above</button>
-                      <button v-close-popper :disabled="idx === settings.rules.length - 1" @click="moveRule(idx, 1)">
-                        Move below
-                      </button>
-                      <button v-close-popper @click="deleteRule(idx)">Remove rule</button>
-                    </div>
-                  </template>
-                </VDropdown>
+                <FocusTrap ref="focusTrapRef" :active="false">
+                  <VDropdown>
+                    <button class="rules-rowAction rules-actionIcons" @click.stop="activateFocusTrap">
+                      <img src="/assets/icon-dots.svg" alt="" />
+                    </button>
+                    <template #popper>
+                      <div class="rules-menu">
+                        <button v-close-popper @click="toggleRuleState(idx)">
+                          {{ rule.active ? 'Disable' : 'Active' }} rule
+                        </button>
+                        <button v-close-popper :disabled="idx === 0" @click="moveRule(idx, -1)">Move above</button>
+                        <button v-close-popper :disabled="idx === settings.rules.length - 1" @click="moveRule(idx, 1)">
+                          Move below
+                        </button>
+                        <button v-close-popper @click="deleteRule(idx)">Remove rule</button>
+                      </div>
+                    </template>
+                  </VDropdown>
+                </FocusTrap>
               </div>
             </Draggable>
             <div v-if="selectedRuleId === rule.id" class="rules-edit">
@@ -111,15 +113,7 @@
       <template #title>About</template>
       <template #body>
         <div class="sectionItem aboutContainer">
-          <img src="/assets/icon-512.png" alt="" />
-          <div>
-            <h4>{{ manifest.name }}</h4>
-            <p class="textLight">Version {{ manifest.version }}</p>
-          </div>
-        </div>
-        <div class="sectionItem">
-          <p class="textLight">{{ manifest.description }}</p>
-          <p class="textLight">Open source project created by {{ manifest.author }}.</p>
+          <EsfExtensionPresentation :manifest="manifest" credits />
         </div>
       </template>
     </EsfSection>
@@ -127,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue';
+import { ref, reactive, watch, nextTick } from 'vue';
 import EsfRadioGroup from '~/components/esf-radio-group.vue';
 import EsfSection from '~/components/esf-section.vue';
 import EsfButton from '~/components/esf-button.vue';
@@ -143,6 +137,7 @@ import { sendMessage } from 'webext-bridge';
 import { AppDataRule } from '~/types/app';
 import { isDef, throttle, hashString } from '~/utils';
 import EsfInputFile from '~/components/esf-input-file.vue';
+import EsfExtensionPresentation from '~/components/esf-extension-presentation.vue';
 
 const faviconOptions = [
   {
@@ -254,50 +249,19 @@ function newRule(): void {
   const rule = addRule();
   toggleRuleSelection(rule.id);
 }
+
+const focusTrapRef = ref<HTMLElement[] | []>([]);
+
+function activateFocusTrap() {
+  console.log(focusTrapRef.value);
+  nextTick(() => {
+    console.log(focusTrapRef.value);
+    focusTrapRef.value?.activate();
+  });
+}
 </script>
 
 <style lang="scss" scoped>
-// ----------
-// Utility
-.sectionItem {
-  padding-block: 5rem;
-  padding-inline: 3rem;
-
-  &:not(:last-child) {
-    border-block-end: solid var(--esf-primary-light) 1px;
-  }
-}
-
-.sectionItemDescription {
-  color: var(--esf-secondary-dark);
-  margin-block-end: 2rem;
-}
-
-.ruleItem {
-  padding-block: 5rem;
-  padding-inline: 3rem;
-
-  &:not(:last-child) {
-    border-block-end: solid var(--esf-primary-light) 1px;
-  }
-}
-
-.textLight {
-  color: var(--esf-secondary-dark);
-}
-
-.sectionLabel {
-  margin-block-end: 3rem;
-}
-
-// ----------
-// Content based
-main {
-  max-width: 680px;
-  margin: auto;
-  padding-inline: 24px;
-}
-
 .general {
   &-action {
     display: flex;
@@ -431,16 +395,6 @@ main {
   &-action {
     display: flex;
     justify-content: flex-end;
-  }
-}
-
-.aboutContainer {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-column-gap: 4rem;
-
-  img {
-    width: 32px;
   }
 }
 </style>

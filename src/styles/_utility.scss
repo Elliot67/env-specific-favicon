@@ -1,0 +1,37 @@
+.pageContainer {
+  max-width: 680px;
+  margin: auto;
+  padding-inline: 24px;
+  margin-block: 6rem;
+}
+
+.sectionItem {
+  padding-block: 5rem;
+  padding-inline: 3rem;
+
+  &:not(:last-child) {
+    border-block-end: solid var(--esf-primary-light) 1px;
+  }
+}
+
+.sectionItemDescription {
+  color: var(--esf-secondary-dark);
+  margin-block-end: 2rem;
+}
+
+.ruleItem {
+  padding-block: 5rem;
+  padding-inline: 3rem;
+
+  &:not(:last-child) {
+    border-block-end: solid var(--esf-primary-light) 1px;
+  }
+}
+
+.textLight {
+  color: var(--esf-secondary-dark);
+}
+
+.sectionLabel {
+  margin-block-end: 3rem;
+}
