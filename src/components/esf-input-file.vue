@@ -1,14 +1,14 @@
 <template>
   <label :for="id" :class="{ isHoveringWithFile }">
     <span>{{ label }}</span>
-    <div v-if="rootValue" class="currentActive">
+    <div v-if="rootValue && showSelected" class="currentActive">
       <p>Currently selected :</p>
       <img v-if="rootValue" :src="rootValue" />
     </div>
     <input
       :id="id"
       type="file"
-      accept="image/jpeg,image/png,image/svg+xml,image/bmp,image/vnd.microsoft.icon,image/gif,image/tiff,image/webp"
+      :accept="accept"
       @change="onChange"
       @dragenter="isHoveringWithFile = true"
       @dragleave="isHoveringWithFile = false"
@@ -20,7 +20,7 @@
 
 <script lang="ts" setup>
 import { getId } from '~/logic';
-import { computed, ref } from 'vue';
+import { computed, PropType, ref } from 'vue';
 import { isDef } from '~/utils';
 
 const props = defineProps({
@@ -31,6 +31,18 @@ const props = defineProps({
   label: {
     type: String,
     required: true,
+  },
+  accept: {
+    type: String,
+    required: true,
+  },
+  readAsFunction: {
+    type: String as PropType<'DataURL' | 'Text' | 'ArrayBuffer' | 'BinaryString'>,
+    default: 'DataURL',
+  },
+  showSelected: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -49,7 +61,7 @@ function onChange(event: Event) {
   }
 
   const reader = new FileReader();
-  reader.readAsDataURL(file);
+  reader[`readAs${props.readAsFunction}`](file);
   reader.onload = (e) => {
     // @ts-ignore
     rootValue.value = e.target.result;

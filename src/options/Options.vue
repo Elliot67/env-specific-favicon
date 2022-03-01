@@ -8,10 +8,20 @@
           <div class="general-subItem">
             <p class="textLight">Backup and share your settings</p>
             <div class="general-action">
-              <EsfButton>Import</EsfButton>
-              <EsfButton>Export</EsfButton>
+              <EsfButton @click="showImportZone = !showImportZone">{{
+                showImportZone ? 'Close import' : 'Import'
+              }}</EsfButton>
+              <EsfButton @click="exportSettings">Export</EsfButton>
             </div>
           </div>
+          <EsfInputFile
+            v-if="showImportZone"
+            v-model="importSettingsData"
+            label="Click or drag & drop your settings file"
+            accept="application/json"
+            read-as-function="Text"
+            class="general-importZone"
+          ></EsfInputFile>
         </div>
         <div class="sectionItem">
           <h3 class="sectionLabel">Default favicon</h3>
@@ -25,7 +35,12 @@
             <p class="textLight inputFileHint">
               Provide a small size square image, an svg or a 48px width image is recommended.
             </p>
-            <EsfInputFile v-model="settings.favicon.custom" label="Click or drag & drop your favicon" />
+            <EsfInputFile
+              v-model="settings.favicon.custom"
+              label="Click or drag & drop your favicon"
+              accept="image/jpeg,image/png,image/svg+xml,image/bmp,image/vnd.microsoft.icon,image/gif,image/tiff,image/webp"
+              show-selected
+            />
           </template>
         </div>
       </template>
@@ -121,7 +136,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, nextTick } from 'vue';
+import { ref, reactive, watch, nextTick, toRaw } from 'vue';
 import EsfRadioGroup from '~/components/esf-radio-group.vue';
 import EsfSection from '~/components/esf-section.vue';
 import EsfButton from '~/components/esf-button.vue';
@@ -135,9 +150,10 @@ import EsfInputColor from '~/components/esf-input-color.vue';
 import useSettings from '~/composables/useSettings';
 import { sendMessage } from 'webext-bridge';
 import { AppDataRule } from '~/types/app';
-import { isDef, throttle, hashString } from '~/utils';
+import { isDef, throttle, hashString, getDateAsString } from '~/utils';
 import EsfInputFile from '~/components/esf-input-file.vue';
 import EsfExtensionPresentation from '~/components/esf-extension-presentation.vue';
+import { exportJSONFile } from '~/logic/import-export';
 
 const faviconOptions = [
   {
@@ -186,9 +202,27 @@ const ruleColorPositionOptions = [
 
 const manifest = ref<browser.Manifest.WebExtensionManifest>(browser.runtime.getManifest());
 
-const { settings, load, toggleRuleState, moveRule, deleteRule, addRule } = useSettings();
+const { settings, load, importSettings, toggleRuleState, moveRule, deleteRule, addRule } = useSettings();
 
 load();
+
+const showImportZone = ref(false);
+const importSettingsData = ref('');
+
+function exportSettings() {
+  const fileName = `env-specific-favicon-${getDateAsString()}`;
+  exportJSONFile(fileName, toRaw(settings));
+}
+
+watch(importSettingsData, (fileData) => {
+  try {
+    const data = JSON.parse(fileData);
+    importSettings(data);
+    showImportZone.value = false;
+  } catch (e) {
+    console.error('An error occured while importing settings from file', e);
+  }
+});
 
 async function generateIcon(index: number): Promise<string> {
   //@ts-ignore
@@ -266,6 +300,10 @@ function activateFocusTrap() {
   &-action {
     display: flex;
     gap: 2rem;
+  }
+
+  &-importZone {
+    margin-block-start: 4rem;
   }
 
   &-subItem {

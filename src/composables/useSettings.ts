@@ -27,6 +27,12 @@ export default function useSettings() {
     save();
   });
 
+  async function importSettings(data: any): Promise<void> {
+    settings.version = data.version;
+    settings.favicon = data.favicon;
+    settings.rules = data.rules;
+  }
+
   // Rules
 
   function toggleRuleState(index: number) {
@@ -51,6 +57,7 @@ export default function useSettings() {
     settings,
     load,
     save,
+    importSettings,
     reset,
 
     // Rules
