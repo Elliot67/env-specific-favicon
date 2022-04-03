@@ -78,7 +78,7 @@ function run() {
         continue;
       }
 
-      const regex = new RegExp(`/${rule.testPattern}/`);
+      const regex = new RegExp(rule.testPattern);
       if (regex.test(value)) {
         return rule;
       }
@@ -106,6 +106,7 @@ function run() {
       url = getFallbackFavicon();
     }
 
+    console.log(url);
     const $img = await loadImage(url);
     const drawingParams = createCanvasWithImage($img);
     if (isNull(drawingParams)) {
