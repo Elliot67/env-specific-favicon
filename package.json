@@ -2,7 +2,7 @@
   "name": "env-specific-favicon",
   "displayName": "Env Specific Favicon",
   "version": "0.0.1",
-  "description": "A chrome extension to customize favicons based on the URL",
+  "description": "Browser extension to customize favicons based on URL and title regex matching",
   "private": true,
   "scripts": {
     "dev": "npm run clear && cross-env NODE_ENV=development run-p dev:*",

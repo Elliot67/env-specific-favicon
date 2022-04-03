@@ -7,7 +7,7 @@
     </div>
   </div>
   <div class="description">
-    <p class="textLight">{{ manifest.description }}</p>
+    <p class="textLight">{{ manifest.description }}.</p>
     <p v-if="credits" class="textLight">
       <a :href="manifest.homepage_url" target="_blank">Open source project</a> created by {{ manifest.author }}. Feel
       free to contribute.
@@ -16,7 +16,6 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps } from 'vue';
 import browser from 'webextension-polyfill';
 
 interface Props {
