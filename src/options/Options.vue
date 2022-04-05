@@ -77,25 +77,23 @@
                 <div>{{ lang.rules.type[rule.type] }}</div>
                 <div class="rules-pattern">{{ rule.testPattern }}</div>
                 <div>{{ rule.active ? 'Active' : 'Disable' }}</div>
-                <FocusTrap ref="focusTrapRef" :active="false">
-                  <VDropdown>
-                    <button class="rules-rowAction rules-actionIcons" @click.stop="activateFocusTrap">
-                      <img src="/assets/icon-dots.svg" alt="" />
-                    </button>
-                    <template #popper>
-                      <div class="rules-menu">
-                        <button v-close-popper @click="toggleRuleState(idx)">
-                          {{ rule.active ? 'Disable' : 'Active' }} rule
-                        </button>
-                        <button v-close-popper :disabled="idx === 0" @click="moveRule(idx, -1)">Move above</button>
-                        <button v-close-popper :disabled="idx === settings.rules.length - 1" @click="moveRule(idx, 1)">
-                          Move below
-                        </button>
-                        <button v-close-popper @click="deleteRule(idx)">Remove rule</button>
-                      </div>
-                    </template>
-                  </VDropdown>
-                </FocusTrap>
+                <VDropdown @apply-show="activateFocusTrap(rule.id)" @hide="deactivateFocusTrap">
+                  <button class="rules-rowAction rules-actionIcons" @click.stop>
+                    <img src="/assets/icon-dots.svg" alt="" />
+                  </button>
+                  <template #popper>
+                    <div class="rules-menu" :class="'JS-focus-trap-' + rule.id">
+                      <button v-close-popper @click="toggleRuleState(idx)">
+                        {{ rule.active ? 'Disable' : 'Active' }} rule
+                      </button>
+                      <button v-close-popper :disabled="idx === 0" @click="moveRule(idx, -1)">Move above</button>
+                      <button v-close-popper :disabled="idx === settings.rules.length - 1" @click="moveRule(idx, 1)">
+                        Move below
+                      </button>
+                      <button v-close-popper @click="deleteRule(idx)">Remove rule</button>
+                    </div>
+                  </template>
+                </VDropdown>
               </div>
             </Draggable>
             <div v-if="selectedRuleId === rule.id" class="rules-edit">
@@ -150,10 +148,12 @@ import EsfInputColor from '~/components/esf-input-color.vue';
 import useSettings from '~/composables/useSettings';
 import { sendMessage } from 'webext-bridge';
 import { AppDataRule } from '~/types/app';
-import { isDef, throttle, hashString, getDateAsString } from '~/utils';
+import { isDef, isNull, throttle, hashString, getDateAsString } from '~/utils';
 import EsfInputFile from '~/components/esf-input-file.vue';
 import EsfExtensionPresentation from '~/components/esf-extension-presentation.vue';
 import { exportJSONFile } from '~/logic/import-export';
+import * as focusTrap from 'focus-trap';
+import { hideAllPoppers } from 'floating-vue';
 
 const faviconOptions = [
   {
@@ -284,14 +284,34 @@ function newRule(): void {
   toggleRuleSelection(rule.id);
 }
 
-const focusTrapRef = ref<HTMLElement[] | []>([]);
+let trap: focusTrap.FocusTrap | null = null;
 
-function activateFocusTrap() {
-  console.log(focusTrapRef.value);
+function activateFocusTrap(ruleId: string) {
+  const containerSelector = `.JS-focus-trap-${ruleId}`;
+
+  if (isNull(trap)) {
+    trap = focusTrap.createFocusTrap(containerSelector, {
+      onDeactivate: () => {
+        hideAllPoppers();
+      },
+    });
+  } else {
+    trap.updateContainerElements(containerSelector);
+  }
+
   nextTick(() => {
-    console.log(focusTrapRef.value);
-    focusTrapRef.value?.activate();
+    if (isNull(trap)) {
+      return;
+    }
+    trap.activate();
   });
+}
+
+function deactivateFocusTrap() {
+  if (isNull(trap)) {
+    return;
+  }
+  trap.deactivate();
 }
 </script>
 

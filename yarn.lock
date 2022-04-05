@@ -2019,11 +2019,6 @@ fluent-syntax@0.13.0:
   resolved "https://registry.yarnpkg.com/fluent-syntax/-/fluent-syntax-0.13.0.tgz#417144d99cba94ff474c422b3e6623d5a842855a"
   integrity sha512-0Bk1AsliuYB550zr4JV9AYhsETsD3ELXUQzdXGJfIc1Ni/ukAfBdQInDhVMYJUaT2QxoamNslwkYF7MlOrPUwg==
 
-focus-trap-vue@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/focus-trap-vue/-/focus-trap-vue-3.2.1.tgz#630023bb96bfe45ebcf2e817eee6eb28d4edf52b"
-  integrity sha512-nThbiBo4F9ilwEc3kOYTW63RDbOsWNdz7jWFk9CmA9/LmZ7EJgEszV2MBXaQQMceEsB7h0WuIkkfzQznU5yj+A==
-
 focus-trap@^6.7.3:
   version "6.7.3"
   resolved "https://registry.yarnpkg.com/focus-trap/-/focus-trap-6.7.3.tgz#b5dc195b49c90001f08a63134471d1e6dd381ddd"
