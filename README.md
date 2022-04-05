@@ -1,3 +1,5 @@
+<p align="center"><img width="150" src="./extension/assets/icon.svg" alt="Env Specific Favicon"></p>
+
 <h1 align="center">Env Specific Favicon</h1>
 <p align="center">Browser extension to customize favicons based on URL and title regex matching</p>
 
