@@ -1,7 +1,7 @@
 {
   "name": "env-specific-favicon",
   "displayName": "Env Specific Favicon",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Browser extension to customize favicons based on URL and title regex matching",
   "private": true,
   "scripts": {
