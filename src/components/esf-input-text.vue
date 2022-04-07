@@ -1,5 +1,5 @@
 <template>
-  <label :for="id">
+  <label :for="id" :class="{ invalid: !isValid }">
     <span>{{ label }}</span>
     <input :id="id" v-model="rootValue" :placeholder="placeholder" type="text" />
   </label>
@@ -20,6 +20,10 @@ const props = defineProps({
   label: {
     type: String,
     required: true,
+  },
+  isValid: {
+    type: Boolean,
+    default: true,
   },
 });
 
@@ -64,7 +68,17 @@ input {
   }
 
   &:focus {
-    border-color: var(--esf-accent);
+    border-color: var(--esf-accent) !important;
+  }
+}
+
+.invalid {
+  span {
+    color: var(--esf-error);
+  }
+
+  input {
+    border-color: var(--esf-error);
   }
 }
 </style>

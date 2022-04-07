@@ -75,7 +75,12 @@
                   <img :src="icons[rule.id]?.icon" alt="" />
                 </div>
                 <div>{{ lang.rules.type[rule.type] }}</div>
-                <div class="rules-pattern">{{ rule.testPattern }}</div>
+                <div
+                  class="rules-pattern"
+                  :class="{ invalid: !isRegexValid(rule.testPattern) || !isColorHexValid(rule.color) }"
+                >
+                  {{ rule.testPattern }}
+                </div>
                 <div>{{ rule.active ? 'Active' : 'Disable' }}</div>
                 <VDropdown @apply-show="activateFocusTrap(rule.id)" @hide="deactivateFocusTrap">
                   <button class="rules-rowAction rules-actionIcons" @click.stop>
@@ -103,14 +108,19 @@
               </div>
               <div class="ruleItem">
                 <h4 class="sectionLabel">Pattern</h4>
-                <EsfInputText v-model="rule.testPattern" label="Match pattern" placeholder="*.com" />
+                <EsfInputText
+                  v-model="rule.testPattern"
+                  label="Match pattern"
+                  placeholder="*.com"
+                  :is-valid="isRegexValid(rule.testPattern)"
+                />
               </div>
               <div class="ruleItem">
                 <h4 class="sectionLabel">Color</h4>
-                <EsfInputColor v-model="rule.color" label="Color" placeholder="#663399" />
+                <EsfInputColor v-model="rule.color" label="Color code" placeholder="#663399" />
               </div>
               <div class="ruleItem">
-                <h4 class="sectionLabel">Color position</h4>
+                <h4 class="sectionLabel">Overlay type</h4>
                 <EsfRadioGroup v-model="rule.filter" :options="ruleColorPositionOptions"></EsfRadioGroup>
               </div>
             </div>
@@ -148,7 +158,7 @@ import EsfInputColor from '~/components/esf-input-color.vue';
 import useSettings from '~/composables/useSettings';
 import { sendMessage } from 'webext-bridge';
 import { AppDataRule } from '~/types/app';
-import { isDef, isNull, throttle, hashString, getDateAsString } from '~/utils';
+import { isDef, isNull, throttle, hashString, getDateAsString, isRegexValid, isColorHexValid } from '~/utils';
 import EsfInputFile from '~/components/esf-input-file.vue';
 import EsfExtensionPresentation from '~/components/esf-extension-presentation.vue';
 import { exportJSONFile } from '~/logic/import-export';
@@ -387,6 +397,10 @@ function deactivateFocusTrap() {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+
+    &.invalid {
+      color: var(--esf-error);
+    }
   }
 
   &-rowAction {

@@ -1,5 +1,5 @@
 <template>
-  <label :for="id">
+  <label :for="id" :class="{ invalid: !isValid }">
     <span>{{ label }}</span>
     <div>
       <input v-model="rootValue" type="color" />
@@ -11,6 +11,7 @@
 <script lang="ts" setup>
 import { getId } from '~/logic';
 import { computed } from 'vue';
+import { isColorHexValid } from '~/utils';
 
 const props = defineProps({
   modelValue: {
@@ -38,6 +39,10 @@ const rootValue = computed({
   set: (newValue: string) => {
     emits('update:modelValue', newValue.toUpperCase());
   },
+});
+
+const isValid = computed(() => {
+  return isColorHexValid(rootValue.value);
 });
 </script>
 
@@ -113,6 +118,16 @@ input[type='text'] {
 
   &:focus {
     border-color: var(--esf-accent);
+  }
+}
+
+.invalid {
+  span {
+    color: var(--esf-error);
+  }
+
+  input {
+    border-color: var(--esf-error);
   }
 }
 </style>
