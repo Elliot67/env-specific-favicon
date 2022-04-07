@@ -436,7 +436,6 @@ function deactivateFocusTrap() {
       &:hover:not(:disabled),
       &:focus-visible:not(:disabled) {
         background: var(--esf-primary-light);
-        // TODO: Add focus trap for the menu
       }
     }
   }
