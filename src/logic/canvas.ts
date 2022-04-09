@@ -2,12 +2,10 @@ import { AppDataRule } from '~/types/app';
 import { isNull, isString } from '~/utils';
 
 export async function loadImage(imageUrl: string): Promise<ImageBitmap> {
-  return new Promise((resolve, reject) => {
-    fetch(imageUrl)
-      .then((response) => response.blob())
-      .then((blob) => createImageBitmap(blob))
-      .then((bitmap) => resolve(bitmap));
-  });
+  return fetch(imageUrl)
+    .then((response) => response.blob())
+    .then((blob) => createImageBitmap(blob))
+    .then((bitmap) => bitmap);
 }
 
 export function createCanvasWithImage(img: ImageBitmap): {
