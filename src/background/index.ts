@@ -1,16 +1,9 @@
+import browser from 'webextension-polyfill';
 import { onMessage } from 'webext-bridge';
 import { baseFavicons, defaultSettings } from '~/configuration/settings';
-import { drawFilterOnCanvas, loadImage, SettingsStorage, createCanvasWithImage } from '~/logic';
+import { drawFilterOnCanvas, loadImage, SettingsStorage, createCanvasWithImage, canvaToDataURL } from '~/logic';
 import { isDef, isNull, isUndefined } from '~/utils';
 import { AppDataGlobal, AppDataRule } from '~/types/app';
-
-// only on dev mode
-if (import.meta.hot) {
-  // @ts-expect-error for background HMR
-  import('/@vite/client');
-  // load latest content script
-  import('./contentScriptHMR');
-}
 
 browser.runtime.onInstalled.addListener((): void => {
   browser.runtime.openOptionsPage();
@@ -97,7 +90,9 @@ function run() {
       }
     }
 
-    const themeSuffix = window?.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    // FIXME: Find a way with Manifest v3
+    //const themeSuffix = window?.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    const themeSuffix = 'dark';
     return baseFavicons[`${type}_${themeSuffix}`];
   }
 
@@ -106,15 +101,24 @@ function run() {
       url = getFallbackFavicon();
     }
 
-    console.log(url);
-    const $img = await loadImage(url);
-    const drawingParams = createCanvasWithImage($img);
-    if (isNull(drawingParams)) {
-      console.warn('fallback on the default favicon');
-      return url;
+    try {
+      const img = await loadImage(url);
+      const drawingParams = createCanvasWithImage(img);
+      if (isNull(drawingParams)) {
+        img.close();
+        console.warn('fallback on the default favicon');
+        return Promise.resolve(url);
+      }
+      const { canvas, ctx } = drawingParams;
+      drawFilterOnCanvas(canvas, ctx, item.color, item.filter);
+
+      return await canvaToDataURL(canvas)
+        .then((dataUrl) => dataUrl)
+        .catch(() => url as string)
+        .finally(() => img.close());
+    } catch (e) {
+      console.warn('Could not load the image.', e);
+      return Promise.resolve(url);
     }
-    const { $canvas, ctx } = drawingParams;
-    drawFilterOnCanvas($canvas, ctx, item.color, item.filter);
-    return $canvas.toDataURL('image/png');
   }
 }

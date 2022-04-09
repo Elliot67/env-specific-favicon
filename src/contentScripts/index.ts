@@ -26,9 +26,10 @@ import { isNull, isUndefined } from '~/utils';
   const $links = get$Links();
   const links = Array.from($links).reduce((acc, $l) => {
     const href = $l.href;
-    if (!isUndefined(href) && !acc.includes(href)) {
-      const operation = href.endsWith('.svg') ? 'unshift' : 'push';
-      acc[operation](href);
+    // Due to a lack of browser support, svg icons aren't supported anymore
+    // browsers didn't includes support for image/svg+xml blob in createimageBitmap()
+    if (!isUndefined(href) && !acc.includes(href) && !href.endsWith('.svg')) {
+      acc.push(href);
     }
     return acc;
   }, [] as string[]);

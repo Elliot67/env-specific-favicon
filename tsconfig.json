@@ -16,7 +16,8 @@
     "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
     "types": [
-      "vite/client"
+      "vite/client",
+      "@types/offscreencanvas"
     ],
     "paths": {
       "~/*": [

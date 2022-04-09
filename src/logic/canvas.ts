@@ -1,29 +1,21 @@
 import { AppDataRule } from '~/types/app';
-import { isNull } from '~/utils';
+import { isNull, isString } from '~/utils';
 
-export async function loadImage(imageUrl: string): Promise<HTMLImageElement> {
+export async function loadImage(imageUrl: string): Promise<ImageBitmap> {
   return new Promise((resolve, reject) => {
-    const $img = document.createElement('img');
-    $img.addEventListener(
-      'load',
-      () => {
-        return resolve($img);
-      },
-      { passive: true }
-    );
-    $img.addEventListener('error', (e) => {
-      return reject(e);
-    });
-    $img.src = imageUrl;
+    fetch(imageUrl)
+      .then((response) => response.blob())
+      .then((blob) => createImageBitmap(blob))
+      .then((bitmap) => resolve(bitmap));
   });
 }
 
-export function createCanvasWithImage($img: HTMLImageElement): {
-  $canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
+export function createCanvasWithImage(img: ImageBitmap): {
+  canvas: OffscreenCanvas;
+  ctx: OffscreenCanvasRenderingContext2D;
 } | null {
-  let imgWidth = $img.width;
-  let imgHeight = $img.height;
+  let imgWidth = img.width;
+  let imgHeight = img.height;
 
   // Resize image with a max size boundary
   const MAX_IMG_DIMENSION = 512;
@@ -33,27 +25,27 @@ export function createCanvasWithImage($img: HTMLImageElement): {
     imgHeight = imgHeight / scaleRatio;
   }
 
-  const $canvas = document.createElement('canvas');
-  $canvas.width = imgWidth;
-  $canvas.height = imgHeight;
-  const ctx = $canvas.getContext('2d');
+  const canvas = new OffscreenCanvas(imgWidth, imgHeight);
+  canvas.width = imgWidth;
+  canvas.height = imgHeight;
+  const ctx = canvas.getContext('2d');
   if (isNull(ctx)) {
     console.warn('Error, could not get canvas context');
     return null;
   }
 
-  ctx.drawImage($img, 0, 0, imgWidth, imgHeight);
-  return { $canvas, ctx };
+  ctx.drawImage(img, 0, 0, imgWidth, imgHeight);
+  return { canvas, ctx };
 }
 
 export function drawFilterOnCanvas(
-  $canvas: HTMLCanvasElement,
-  ctx: CanvasRenderingContext2D,
+  canvas: OffscreenCanvas,
+  ctx: OffscreenCanvasRenderingContext2D,
   color: string,
   filter: AppDataRule['filter']
 ): void {
-  const width = $canvas.width;
-  const height = $canvas.height;
+  const width = canvas.width;
+  const height = canvas.height;
 
   switch (filter) {
     case 'top':
@@ -75,4 +67,21 @@ export function drawFilterOnCanvas(
       ctx.fillRect(0, 0, width, height);
       return;
   }
+}
+
+export async function canvaToDataURL(canvas: OffscreenCanvas): Promise<string> {
+  return await canvas.convertToBlob({ type: 'image/png' }).then((blob) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        isString(reader.result)
+          ? resolve(reader.result)
+          : reject('Could export the canvas image. Reader result invalid.');
+      });
+      reader.addEventListener('abort error', () => {
+        reject('Could export the canvas image.');
+      });
+      reader.readAsDataURL(blob);
+    });
+  });
 }
