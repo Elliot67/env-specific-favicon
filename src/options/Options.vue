@@ -69,7 +69,7 @@
             <Draggable class="sectionItem rules-item" tag="button" @click="toggleRuleSelection(rule.id)">
               <div class="rules-row" :class="{ isDisabled: !rule.active }">
                 <div class="rules-actionIcons rules-handler">
-                  <img src="/assets/icon-grab.svg" alt="" />
+                  <img src="../../extension/assets/icon-grab.svg" alt="" />
                 </div>
                 <div>
                   <img :src="icons[rule.id]?.icon" alt="" />
@@ -84,7 +84,7 @@
                 <div>{{ rule.active ? 'Active' : 'Disable' }}</div>
                 <VDropdown @apply-show="activateFocusTrap(rule.id)" @hide="deactivateFocusTrap">
                   <button class="rules-rowAction rules-actionIcons" @click.stop>
-                    <img src="/assets/icon-dots.svg" alt="" />
+                    <img src="../../extension/assets/icon-dots.svg" alt="" />
                   </button>
                   <template #popper>
                     <div class="rules-menu" :class="'JS-focus-trap-' + rule.id">
