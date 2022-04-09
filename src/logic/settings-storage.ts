@@ -1,4 +1,4 @@
-import { Storage, storage } from 'webextension-polyfill';
+import { storage } from 'webextension-polyfill';
 import { defaultSettings } from '~/configuration/settings';
 import { AppDataGlobal } from '~/types/app';
 import { isDef } from '~/utils';
@@ -21,12 +21,5 @@ export const SettingsStorage = {
 
   async resetItem(): Promise<void> {
     return await SettingsStorage.setItem(defaultSettings);
-  },
-
-  getNewSettingsFromChange(changes: Record<string, Storage.StorageChange>, areaName: string): AppDataGlobal | null {
-    if (areaName === 'local' && isDef(changes[STORAGE_KEY])) {
-      return changes[STORAGE_KEY].newValue as AppDataGlobal;
-    }
-    return null;
   },
 };
