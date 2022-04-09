@@ -41,7 +41,7 @@ export async function getManifest(): Promise<Manifest.WebExtensionManifest> {
     web_accessible_resources: [
       {
         resources: ['dist/contentScripts/style.css'],
-        matches: ['<all_urls>'],
+        matches: ['https://*/*', 'http://*/*'],
       },
     ],
     content_security_policy: {
