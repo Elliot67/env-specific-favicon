@@ -376,6 +376,7 @@ function deactivateFocusTrap() {
 
     img {
       width: 100%;
+      pointer-events: none;
     }
 
     &.isDisabled {
