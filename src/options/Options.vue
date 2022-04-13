@@ -26,8 +26,9 @@
         <div class="sectionItem">
           <h3 class="sectionLabel">Default favicon</h3>
           <p class="sectionItemDescription">
-            If you want to keep your fallback browser favicon, you have to choose 'custom' and upload the image. More
-            details on how to get the original file can be found in
+            If a rule match a website without any favicon, the fallback icon will be used. If you want to keep your
+            browser default favicon, you have to choose 'custom' and upload the image. More details on how to get the
+            original file can be found in
             <a href="https://github.com/Elliot67/env-specific-favicon">the repository readme</a>.
           </p>
           <EsfRadioGroup v-model="settings.favicon.type" :options="faviconOptions"></EsfRadioGroup>

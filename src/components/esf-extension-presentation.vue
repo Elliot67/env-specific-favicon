@@ -9,8 +9,7 @@
   <div class="description">
     <p class="textLight">{{ manifest.description }}.</p>
     <p v-if="credits" class="textLight">
-      <a :href="manifest.homepage_url" target="_blank">Open source project</a> created by {{ manifest.author }}. Feel
-      free to contribute.
+      <a :href="manifest.homepage_url" target="_blank">Open source project</a> created by {{ manifest.author }}.
     </p>
   </div>
 </template>
