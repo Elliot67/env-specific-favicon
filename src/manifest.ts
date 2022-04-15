@@ -40,7 +40,7 @@ export async function getManifest(): Promise<Manifest.WebExtensionManifest> {
     ],
     web_accessible_resources: [
       {
-        resources: ['dist/contentScripts/style.css'],
+        resources: ['./dist/contentScripts/style.css'],
         matches: ['https://*/*', 'http://*/*'],
       },
     ],

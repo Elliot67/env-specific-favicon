@@ -1,6 +1,6 @@
 <template>
   <div class="presentation">
-    <img src="../../extension/assets/icon-512.png" alt="" />
+    <img src="/assets/static/icon.svg" alt="" />
     <div>
       <h4>{{ manifest.name }}</h4>
       <p class="textLight">Version {{ manifest.version }}</p>
