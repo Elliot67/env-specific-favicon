@@ -5,8 +5,10 @@ import { drawFilterOnCanvas, loadImage, SettingsStorage, createCanvasWithImage, 
 import { isNull, isUndefined } from '~/utils';
 import { AppDataGlobal, AppDataRule } from '~/types/app';
 
-browser.runtime.onInstalled.addListener((): void => {
-  browser.runtime.openOptionsPage();
+browser.runtime.onInstalled.addListener((event): void => {
+  if (event.reason === 'install') {
+    browser.runtime.openOptionsPage();
+  }
 });
 
 // Generate favicon for Options page
