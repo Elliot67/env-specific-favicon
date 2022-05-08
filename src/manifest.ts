@@ -33,7 +33,7 @@ export async function getManifest(): Promise<Manifest.WebExtensionManifest> {
     permissions: ['tabs', 'storage'],
     content_scripts: [
       {
-        run_at: 'document_idle', // TODO: Find the best value
+        run_at: 'document_idle',
         matches: ['http://*/*', 'https://*/*'],
         js: ['./dist/contentScripts/index.global.js'],
       },
