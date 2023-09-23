@@ -36,17 +36,12 @@ export async function getManifest(): Promise<Manifest.WebExtensionManifest> {
       512: './assets/icon-512.png',
     },
     permissions: ['tabs', 'storage'],
+    host_permissions: ['*://*/*'],
     content_scripts: [
       {
         run_at: 'document_idle',
         matches: ['http://*/*', 'https://*/*'],
         js: ['./dist/contentScripts/index.global.js'],
-      },
-    ],
-    web_accessible_resources: [
-      {
-        resources: ['dist/contentScripts/style.css'],
-        matches: ['https://*/*', 'http://*/*'],
       },
     ],
     content_security_policy: {
