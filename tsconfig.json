@@ -11,6 +11,7 @@
     "esModuleInterop": true,
     "incremental": false,
     "skipLibCheck": true,
+    "jsx": "preserve",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "noUnusedLocals": true,

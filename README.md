@@ -15,7 +15,7 @@ Firefox doesn't have any working version at the moment, the extension makes use 
 
 ## Development
 
-Source code is based on the [vitesse-webext template](https://github.com/antfu/vitesse-webext) updated to support manifest v3. Because of the migration, the build script is the only one working.
+Source code is based on the [vitesse-webext template](https://github.com/antfu/vitesse-webext) with manifest v3.
 
 ## Additionnal informations
 

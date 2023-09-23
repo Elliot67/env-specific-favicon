@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill';
-import { onMessage } from 'webext-bridge';
+import { onMessage } from 'webext-bridge/background';
 import { baseFavicons, defaultSettings } from '~/configuration/settings';
 import { drawFilterOnCanvas, loadImage, SettingsStorage, createCanvasWithImage, canvaToDataURL } from '~/logic';
 import { isNull, isUndefined } from '~/utils';

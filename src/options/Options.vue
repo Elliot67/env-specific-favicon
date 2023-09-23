@@ -157,7 +157,7 @@ import { en as lang } from '~/translations/en';
 import EsfInputText from '~/components/esf-input-text.vue';
 import EsfInputColor from '~/components/esf-input-color.vue';
 import useSettings from '~/composables/useSettings';
-import { sendMessage } from 'webext-bridge';
+import { sendMessage } from 'webext-bridge/options';
 import { AppDataRule } from '~/types/app';
 import { isDef, isNull, throttle, hashString, getDateAsString, isRegexValid, isColorHexValid } from '~/utils';
 import EsfInputFile from '~/components/esf-input-file.vue';

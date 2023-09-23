@@ -1,4 +1,4 @@
-import { ProtocolWithReturn } from 'webext-bridge';
+import type { ProtocolWithReturn } from 'webext-bridge';
 import { AppDataRule } from '~/types/app';
 
 declare module 'webext-bridge' {

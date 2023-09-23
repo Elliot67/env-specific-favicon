@@ -1,4 +1,4 @@
-import { sendMessage } from 'webext-bridge';
+import { sendMessage } from 'webext-bridge/content-script';
 import { isNull, isUndefined } from '~/utils';
 
 (async () => {

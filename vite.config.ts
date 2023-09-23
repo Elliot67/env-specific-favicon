@@ -1,8 +1,10 @@
 import { dirname, relative } from 'path';
-import { defineConfig, UserConfig } from 'vite';
+import type { UserConfig } from 'vite';
+import { defineConfig } from 'vite';
 import Vue from '@vitejs/plugin-vue';
 import AutoImport from 'unplugin-auto-import/vite';
 import { r, port, isDev } from './scripts/utils';
+import packageJson from './package.json';
 
 export const sharedConfig: UserConfig = {
   root: r('src'),
@@ -13,6 +15,7 @@ export const sharedConfig: UserConfig = {
   },
   define: {
     __DEV__: isDev,
+    __NAME__: JSON.stringify(packageJson.name),
   },
   plugins: [
     Vue(),
@@ -32,7 +35,9 @@ export const sharedConfig: UserConfig = {
       enforce: 'post',
       apply: 'build',
       transformIndexHtml(html, { path }) {
-        return html.replace(/"\/assets\//g, `"${relative(dirname(path), '/assets')}/`);
+        return html
+          .replace(/"\/assets\//g, `"${relative(dirname(path), '/assets')}/`)
+          .replace(`href="http://localhost:3303/"`, '');
       },
     },
   ],
@@ -51,6 +56,7 @@ export default defineConfig(({ command }) => ({
     },
   },
   build: {
+    watch: isDev ? {} : undefined,
     outDir: r('extension/dist'),
     emptyOutDir: false,
     sourcemap: isDev ? 'inline' : false,
@@ -65,5 +71,4 @@ export default defineConfig(({ command }) => ({
       },
     },
   },
-  plugins: [...sharedConfig.plugins!],
 }));
