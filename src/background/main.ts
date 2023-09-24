@@ -8,6 +8,11 @@ import { AppDataGlobal, AppDataRule } from '~/types/app';
 browser.runtime.onInstalled.addListener((event): void => {
   if (event.reason === 'install') {
     browser.runtime.openOptionsPage();
+    return;
+  }
+
+  if (event.reason === 'update') {
+    SettingsStorage.applyMigrations();
   }
 });
 

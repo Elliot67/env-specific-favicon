@@ -10,9 +10,6 @@ export default function useSettings() {
 
   async function load(): Promise<void> {
     const storageSettings = await SettingsStorage.getItem();
-    if (storageSettings.version !== defaultSettings.version) {
-      migrateSettings(storageSettings);
-    }
     settings.version = storageSettings.version;
     settings.favicon = storageSettings.favicon;
     settings.rules = storageSettings.rules;
