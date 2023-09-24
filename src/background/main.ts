@@ -70,7 +70,6 @@ function getMatch(
 }
 
 async function getNewFavicon(rule: AppDataRule, links: string[]): Promise<string> {
-  console.log('what is the thing', rule);
   if (rule.replacementType === 'external') {
     return rule.externalFaviconLink;
   }
