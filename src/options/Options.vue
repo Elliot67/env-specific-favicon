@@ -105,10 +105,12 @@
             <div v-if="selectedRuleId === rule.id" class="rules-edit">
               <div class="ruleItem">
                 <h4 class="sectionLabel">Match pattern against</h4>
+                <p class="sectionItemDescription">Which element of the webpage will be used to match the pattern.</p>
                 <EsfRadioGroup v-model="rule.type" :options="ruleMatchPatternOptions"></EsfRadioGroup>
               </div>
               <div class="ruleItem">
-                <h4 class="sectionLabel">Pattern</h4>
+                <h4 class="sectionLabel">Regex</h4>
+                <p class="sectionItemDescription">The regex pattern determines if the rule will be applied.</p>
                 <EsfInputText
                   v-model="rule.testPattern"
                   label="Match pattern"
@@ -117,13 +119,33 @@
                 />
               </div>
               <div class="ruleItem">
-                <h4 class="sectionLabel">Color</h4>
-                <EsfInputColor v-model="rule.color" label="Color code" placeholder="#663399" />
+                <h4 class="sectionLabel">Favicon modification type</h4>
+                <p class="sectionItemDescription">
+                  Either customize the original favicon of the webpage or replace it with one of your choice.
+                </p>
+                <EsfRadioGroup v-model="rule.replacementType" :options="ruleReplacementTypeOptions"></EsfRadioGroup>
               </div>
-              <div class="ruleItem">
-                <h4 class="sectionLabel">Overlay type</h4>
-                <EsfRadioGroup v-model="rule.filter" :options="ruleColorPositionOptions"></EsfRadioGroup>
-              </div>
+              <template v-if="rule.replacementType === 'generated'">
+                <div class="ruleItem">
+                  <h4 class="sectionLabel">Color</h4>
+                  <EsfInputColor v-model="rule.color" label="Color code" placeholder="#663399" />
+                </div>
+                <div class="ruleItem">
+                  <h4 class="sectionLabel">Overlay type</h4>
+                  <EsfRadioGroup v-model="rule.filter" :options="ruleColorPositionOptions"></EsfRadioGroup>
+                </div>
+              </template>
+              <template v-if="rule.replacementType === 'external'">
+                <div class="ruleItem">
+                  <p class="sectionItemDescription">Defines the link to the new favicon.</p>
+                  <EsfInputText
+                    v-model="rule.externalFaviconLink"
+                    label="Favicon link"
+                    placeholder="https://example.com/favicon.svg"
+                    :is-valid="isExternalFaviconLinkValid(rule.externalFaviconLink)"
+                  />
+                </div>
+              </template>
             </div>
           </template>
         </Container>
@@ -158,15 +180,33 @@ import EsfInputText from '~/components/esf-input-text.vue';
 import EsfInputColor from '~/components/esf-input-color.vue';
 import useSettings from '~/composables/useSettings';
 import { sendMessage } from 'webext-bridge/options';
-import { AppDataRule } from '~/types/app';
-import { isDef, isNull, throttle, hashString, getDateAsString, isRegexValid, isColorHexValid } from '~/utils';
+import {
+  AppDataRule,
+  IconsTypeSettings,
+  AppDataRuleType,
+  AppDataRuleReplacementType,
+  AppDataRyleFilter,
+} from '~/types/app';
+import {
+  isDef,
+  isNull,
+  throttle,
+  hashString,
+  getDateAsString,
+  isRegexValid,
+  isColorHexValid,
+  isExternalFaviconLinkValid,
+} from '~/utils';
 import EsfInputFile from '~/components/esf-input-file.vue';
 import EsfExtensionPresentation from '~/components/esf-extension-presentation.vue';
 import { exportJSONFile } from '~/logic/import-export';
 import * as focusTrap from 'focus-trap';
 import { hideAllPoppers } from 'floating-vue';
 
-const faviconOptions = [
+const faviconOptions: Array<{
+  label: string;
+  value: IconsTypeSettings;
+}> = [
   {
     label: lang.favicon.global,
     value: 'global',
@@ -181,7 +221,10 @@ const faviconOptions = [
   },
 ];
 
-const ruleMatchPatternOptions = [
+const ruleMatchPatternOptions: Array<{
+  label: string;
+  value: AppDataRuleType;
+}> = [
   {
     label: lang.rules.type.url,
     value: 'url',
@@ -192,7 +235,24 @@ const ruleMatchPatternOptions = [
   },
 ];
 
-const ruleColorPositionOptions = [
+const ruleReplacementTypeOptions: Array<{
+  label: string;
+  value: AppDataRuleReplacementType;
+}> = [
+  {
+    label: lang.rules.replacementType.generated,
+    value: 'generated',
+  },
+  {
+    label: lang.rules.replacementType.external,
+    value: 'external',
+  },
+];
+
+const ruleColorPositionOptions: Array<{
+  label: string;
+  value: AppDataRyleFilter;
+}> = [
   {
     label: lang.rules.filters.top,
     value: 'top',
@@ -213,7 +273,8 @@ const ruleColorPositionOptions = [
 
 const manifest = ref<browser.Manifest.WebExtensionManifest>(browser.runtime.getManifest());
 
-const { settings, load, importSettings, toggleRuleState, moveRule, deleteRule, addRule } = useSettings();
+const { settings, load, areSettingsPartiallyValid, importSettings, toggleRuleState, moveRule, deleteRule, addRule } =
+  useSettings();
 
 load();
 
@@ -228,6 +289,9 @@ function exportSettings() {
 watch(importSettingsData, (fileData) => {
   try {
     const data = JSON.parse(fileData);
+    if (!areSettingsPartiallyValid(data)) {
+      throw new Error(`Imported data isn't a valid configuration file`);
+    }
     importSettings(data);
     showImportZone.value = false;
   } catch (e) {
@@ -242,7 +306,12 @@ async function generateIcon(index: number): Promise<string> {
 }
 
 function generateIconHash(rule: AppDataRule): string {
-  let hash = rule.color + rule.filter + settings.favicon.type;
+  let hash = '';
+  if (rule.replacementType === 'generated') {
+    hash += rule.color + rule.filter + settings.favicon.type;
+  } else if (rule.replacementType === 'external') {
+    hash += rule.externalFaviconLink;
+  }
   if (settings.favicon.type === 'custom') {
     hash += hashString(settings.favicon.custom);
   }
@@ -265,7 +334,7 @@ const throttledRenewIcons = throttle(async () => {
       }
     });
   }, 300);
-}, 500);
+}, 700);
 watch(settings, throttledRenewIcons);
 
 const selectedRuleId = ref<string | null>(null);

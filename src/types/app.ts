@@ -13,8 +13,14 @@ export type IconsTypeFull = 'global_dark' | 'global_light' | 'earth_dark' | 'ear
 export interface AppDataRule {
   id: string;
   active: boolean;
-  type: 'url' | 'title';
+  type: AppDataRuleType;
   testPattern: string;
-  filter: 'top' | 'bottom' | 'cover' | 'fill';
+  replacementType: AppDataRuleReplacementType;
+  filter: AppDataRyleFilter;
   color: string;
+  externalFaviconLink: string;
 }
+
+export type AppDataRuleType = 'url' | 'title';
+export type AppDataRuleReplacementType = 'generated' | 'external';
+export type AppDataRyleFilter = 'top' | 'bottom' | 'cover' | 'fill';

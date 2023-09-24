@@ -2,12 +2,17 @@ import { SettingsStorage, getEmptyRule } from '~/logic';
 import { AppDataGlobal, AppDataRule } from '~/types/app';
 import { reactive, toRaw, watch } from 'vue';
 import { defaultSettings } from '~/configuration/settings';
+import { migrateSettings } from '~/logic/settings-migrations';
+import { isDef, isString } from '~/utils';
 
 export default function useSettings() {
   const settings = reactive<AppDataGlobal>({ ...defaultSettings });
 
   async function load(): Promise<void> {
     const storageSettings = await SettingsStorage.getItem();
+    if (storageSettings.version !== defaultSettings.version) {
+      migrateSettings(storageSettings);
+    }
     settings.version = storageSettings.version;
     settings.favicon = storageSettings.favicon;
     settings.rules = storageSettings.rules;
@@ -27,7 +32,14 @@ export default function useSettings() {
     save();
   });
 
+  function areSettingsPartiallyValid(settings: any): boolean {
+    return isString(settings.version) && isDef(settings.favicon) && Array.isArray(settings.rules);
+  }
+
   async function importSettings(data: any): Promise<void> {
+    if (data.version !== defaultSettings.version) {
+      migrateSettings(data);
+    }
     settings.version = data.version;
     settings.favicon = data.favicon;
     settings.rules = data.rules;
@@ -57,6 +69,7 @@ export default function useSettings() {
     settings,
     load,
     save,
+    areSettingsPartiallyValid,
     importSettings,
     reset,
 

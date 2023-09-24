@@ -17,5 +17,9 @@ export const en: LangInterface = {
       cover: 'Cover',
       fill: 'Fill',
     },
+    replacementType: {
+      generated: 'Customization',
+      external: 'Replacement',
+    },
   },
 };

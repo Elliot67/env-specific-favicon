@@ -5,5 +5,6 @@ export interface LangInterface {
   rules: {
     type: Record<AppDataRule['type'], string>;
     filters: Record<AppDataRule['filter'], string>;
+    replacementType: Record<AppDataRule['replacementType'], string>;
   };
 }

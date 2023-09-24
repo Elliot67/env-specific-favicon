@@ -13,9 +13,8 @@ browser.runtime.onInstalled.addListener((event): void => {
 
 // Generate favicon for Options page
 onMessage('get-favicon', async ({ data }) => {
-  const rule = data as unknown as AppDataRule;
   const SETTINGS = await SettingsStorage.getItem();
-  return { favicon: await getNewFavicon(SETTINGS, rule) };
+  return { favicon: await getNewFavicon(data, [getFallbackFavicon(SETTINGS)]) };
 });
 
 // Generate favicon for the content script
@@ -28,24 +27,19 @@ onMessage('get-favicon-from-links', async ({ data: links, sender }) => {
     return null;
   }
 
-  links.push('FALLBACK_FAVICON');
+  links.push(getFallbackFavicon(SETTINGS));
 
-  for (const link of links) {
-    try {
-      const favicon = await getNewFavicon(SETTINGS, match, link);
-      return { favicon };
-    } catch (e) {
-      console.warn('error while genereting the favicon with this link, trying the next link', e);
-    }
+  try {
+    const favicon = await getNewFavicon(match, links);
+    return { favicon };
+  } catch (e) {
+    return null;
   }
-
-  console.warn('Unexpected error, could not generate favicons from images or fallbacks', links);
-  return null;
 });
 
 function getMatch(
   SETTINGS: AppDataGlobal,
-  prop: { url: string | undefined; title: string | undefined }
+  prop: { url: string | undefined; title: string | undefined },
 ): AppDataRule | false {
   if (isUndefined(prop.url) && isUndefined(prop.title)) {
     return false;
@@ -70,6 +64,28 @@ function getMatch(
   return false;
 }
 
+async function getNewFavicon(rule: AppDataRule, links: string[]): Promise<string> {
+  console.log('what is the thing', rule);
+  if (rule.replacementType === 'external') {
+    return rule.externalFaviconLink;
+  }
+
+  for (const link of links) {
+    try {
+      const customizedFavicon = await getCustomizedFavicon(rule, link);
+      return customizedFavicon;
+    } catch (e) {
+      console.warn('error while genereting the favicon with this link, trying the next link', e);
+    }
+  }
+
+  throw new Error('Unexpected error, could not generate favicons from images or fallbacks', {
+    cause: {
+      links,
+    },
+  });
+}
+
 function getFallbackFavicon(SETTINGS: AppDataGlobal): string {
   let type = SETTINGS.favicon.type;
   if (type === 'custom') {
@@ -86,11 +102,7 @@ function getFallbackFavicon(SETTINGS: AppDataGlobal): string {
   return baseFavicons[`${type}_${themeSuffix}`];
 }
 
-async function getNewFavicon(SETTINGS: AppDataGlobal, item: AppDataRule, url = 'FALLBACK_FAVICON'): Promise<string> {
-  if (url === 'FALLBACK_FAVICON') {
-    url = getFallbackFavicon(SETTINGS);
-  }
-
+async function getCustomizedFavicon(item: AppDataRule, url: string): Promise<string> {
   try {
     const img = await loadImage(url);
     const drawingParams = createCanvasWithImage(img);

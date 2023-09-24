@@ -7,7 +7,9 @@ export function getEmptyRule(): AppDataRule {
     active: true,
     type: 'url',
     testPattern: '.',
+    replacementType: 'generated',
     filter: 'cover',
     color: '#ff00ff',
+    externalFaviconLink: '',
   };
 }

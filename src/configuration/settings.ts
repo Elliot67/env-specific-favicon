@@ -2,7 +2,7 @@ import { AppDataGlobal, IconsTypeFull } from '~/types/app';
 
 const buildDefaultSettings = <T extends AppDataGlobal>(value: T) => value;
 export const defaultSettings = buildDefaultSettings({
-  version: '1.0',
+  version: browser.runtime.getManifest().version,
   favicon: {
     type: 'earth',
     custom: '',

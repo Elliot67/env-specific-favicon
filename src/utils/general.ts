@@ -47,7 +47,7 @@ export const throttle = (fn: any, delay: number) => {
 };
 
 // https://gist.github.com/jlevy/c246006675becc446360a798e2b2d781
-export function hashString(str: string) {
+export function hashString(str: string): string {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
