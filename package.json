@@ -12,6 +12,7 @@
     "dev:web": "vite",
     "dev:js": "npm run build:js -- --mode development",
     "build": "cross-env NODE_ENV=production run-s clear build:web build:prepare build:background build:js",
+    "build-firefox": "cross-env NODE_ENV=production EXTENSION=firefox run-s clear build:web build:prepare build:background build:js",
     "build:prepare": "esno scripts/prepare.ts",
     "build:background": "vite build --config vite.config.background.ts",
     "build:web": "vite build",
@@ -50,7 +51,7 @@
     "unplugin-auto-import": "^0.16.6",
     "vite": "^4.4.9",
     "vue": "^3.3.4",
-    "vue-dndrop": "^1.2.2",
+    "vue-dndrop": "1.2.x",
     "web-ext": "^7.7.0",
     "webext-bridge": "^6.0.1",
     "webextension-polyfill": "^0.10.0"
@@ -60,4 +61,3 @@
     "yarn": "1.22.19"
   }
 }
-
