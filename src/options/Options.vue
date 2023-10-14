@@ -300,8 +300,7 @@ watch(importSettingsData, (fileData) => {
 });
 
 async function generateIcon(index: number): Promise<string> {
-  //@ts-ignore
-  const { favicon } = await sendMessage('get-favicon', settings.rules[index]);
+  const { favicon } = await sendMessage('get-favicon', toRaw(settings.rules[index]));
   return favicon;
 }
 
