@@ -11,7 +11,7 @@ If your rule isn't working, make sure your pattern is correct with online tools 
 
 The extension is available on all chromium based browser (Google Chrome, Microsoft Edge, Opera, Brave) from [the chrome web store](https://chrome.google.com/webstore/detail/env-specific-favicon/licfgcgpjgbbankegljcpbklabdnmopl).
 
-Firefox doesn't have any working version at the moment, the extension makes use of the [OffscreenCanvas API](https://caniuse.com/mdn-api_offscreencanvas_getcontext_2d_context) which is not currently supported by the browser.
+Firefox doesn't have any published version yet while [this](https://github.com/w3c/webextensions/issues/119) [feature](https://bugzilla.mozilla.org/show_bug.cgi?id=1766026) is not implemented. However, the extension can be built and works after manually allowing all the requested permissions inside `about:addons` > Env Specific Favicon > Permissions.
 
 ## Development
 
