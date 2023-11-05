@@ -1,9 +1,17 @@
 <template>
   <h2><slot name="title"></slot></h2>
-  <section>
+  <section :class="{ alert: props?.type === 'alert' }">
     <slot name="body"></slot>
   </section>
 </template>
+
+<script lang="ts" setup>
+interface Props {
+  type?: 'alert';
+}
+
+const props = defineProps<Props>();
+</script>
 
 <style lang="scss" scoped>
 h2 {
@@ -22,6 +30,10 @@ section {
 
   &:last-of-type {
     margin-bottom: 6rem;
+  }
+
+  &.alert {
+    border: solid var(--esf-error-mandatory) 1px;
   }
 }
 </style>

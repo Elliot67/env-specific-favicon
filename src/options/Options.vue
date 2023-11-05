@@ -1,5 +1,6 @@
 <template>
   <main class="pageContainer">
+    <EsfPermissions />
     <EsfSection>
       <template #title>General</template>
       <template #body>
@@ -178,6 +179,7 @@ import { applyDragOnReactive } from '~/logic/drag-and-drop';
 import { en as lang } from '~/translations/en';
 import EsfInputText from '~/components/esf-input-text.vue';
 import EsfInputColor from '~/components/esf-input-color.vue';
+import EsfPermissions from '~/components/esf-permissions.vue';
 import useSettings from '~/composables/useSettings';
 import { sendMessage } from 'webext-bridge/options';
 import {
@@ -409,6 +411,7 @@ function deactivateFocusTrap() {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
+    gap: 4rem;
   }
 }
 

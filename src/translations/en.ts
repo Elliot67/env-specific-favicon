@@ -1,6 +1,14 @@
 import { LangInterface } from '~/types/lang';
 
 export const en: LangInterface = {
+  general: {
+    permissions: {
+      title: 'Missing required permission',
+      description:
+        'To ensure the extension operates effectively, it requires permission to access all websites in order to match the right ones and retrieve their favicons. Without this access, the extension will not work as intended.',
+      button: 'Grant permission',
+    },
+  },
   favicon: {
     global: 'Global',
     earth: 'Earth',
