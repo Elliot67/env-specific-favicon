@@ -2,17 +2,18 @@
   "compilerOptions": {
     "baseUrl": ".",
     "module": "ESNext",
-    "target": "es2016",
+    "target": "es2022",
     "lib": [
       "DOM",
-      "ESNext"
+      "DOM.Iterable",
+      "ES2022"
     ],
     "strict": true,
     "esModuleInterop": true,
     "incremental": false,
     "skipLibCheck": true,
     "jsx": "preserve",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
