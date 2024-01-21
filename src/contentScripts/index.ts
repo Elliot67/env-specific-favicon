@@ -1,5 +1,6 @@
 import debounce from 'just-debounce-it';
 import { sendMessage } from 'webext-bridge/content-script';
+import { AppDataRule } from '~/types/app';
 import { isNull } from '~/utils';
 
 interface IconNodeData {
@@ -16,37 +17,58 @@ interface IconNodeData {
     }
 
     static async runWhenNeeded(): Promise<void> {
-      // Detect when URL or title change
-      // Only for Chromium, not yet supported in Firefox & Safari
-      if ('navigation' in window) {
-        // @ts-ignore
-        window.navigation.addEventListener('navigate', async () => {
-          const isMatch = await this.checkForMatch();
-          // TODO: We need to check the match is still the same, if not, we have to terminate + recreate
-          if (isMatch && isNull(this.activeInstance)) {
-            this.activeInstance = new EnvSpecificFavicon();
-          }
+      this.handleUrlChanges();
+      // TODO: Also handle title changes with mutation observer
 
-          if (!isMatch && !isNull(this.activeInstance)) {
-            this.activeInstance.terminate();
-            this.activeInstance = null;
-          }
-        });
-      }
-
-      if (await this.checkForMatch()) {
-        this.activeInstance = new EnvSpecificFavicon();
+      const matchId = await this.getNewMatchId();
+      if (!isNull(matchId)) {
+        this.activeInstance = new EnvSpecificFavicon(matchId);
       }
     }
 
-    static checkForMatch() {
-      return sendMessage('has-match', null, 'background');
+    static async handleUrlChanges(): Promise<void> {
+      // Only for Chromium, not yet supported in Firefox & Safari
+      if (!('navigation' in window)) {
+        return;
+      }
+
+      (window.navigation as any).addEventListener('navigatesuccess', async () => {
+        const matchId = await this.getNewMatchId();
+        const hasMatch = !isNull(matchId);
+
+        if (isNull(this.activeInstance)) {
+          if (hasMatch) {
+            this.activeInstance = new EnvSpecificFavicon(matchId);
+          }
+
+          return;
+        }
+
+        if (!hasMatch) {
+          this.activeInstance.terminate();
+          this.activeInstance = null;
+          return;
+        }
+
+        if (matchId === this.activeInstance.matchId) {
+          return;
+        }
+
+        this.activeInstance.terminate();
+        this.activeInstance = new EnvSpecificFavicon(matchId);
+      });
+    }
+
+    static getNewMatchId() {
+      return sendMessage('get-match', { url: window.location.href, title: document.title }, 'background');
     }
   }
 
   class EnvSpecificFavicon {
     private static LINK_ID = 'env-specific-favicon';
     private static ESF_CHANGE_MARK = 'esf-change-mark';
+
+    public matchId: string;
 
     private headNode: HTMLHeadElement;
     private allIconNodes = new Map<HTMLLinkElement, IconNodeData>();
@@ -56,13 +78,15 @@ interface IconNodeData {
     private debouncedRefreshCustomFavicon: ReturnType<typeof debounce<() => Promise<void>>>;
     private headObserver: MutationObserver | null = null;
 
-    constructor() {
+    constructor(matchId: AppDataRule['id']) {
+      this.matchId = matchId;
       this.headNode = document.head;
       if (!isNull(this.headNode) && this.headNode.querySelector(`#${EnvSpecificFavicon.LINK_ID}`)) {
-        throw new Error(`Document is missing a head or Env Specific Favicon is already active`);
+        throw new Error(`Document is missing a head or EnvSpecificFavicon is already active in the page.`);
       }
 
-      this.customIconNode.setAttribute('href', 'data:,'); // TODO: Il faut peut être rajouter l'id aussi
+      this.customIconNode.setAttribute('id', EnvSpecificFavicon.LINK_ID);
+      this.customIconNode.setAttribute('href', 'data:,');
       document.head.append(this.customIconNode);
       this.debouncedRefreshCustomFavicon = debounce(() => this.refreshCustomFavicon(), 20);
 
@@ -272,7 +296,11 @@ interface IconNodeData {
     async refreshCustomFavicon(): Promise<void> {
       const appropriateLinks = this.getAppropriateLinks();
 
-      const response = await sendMessage('get-favicon-from-links', appropriateLinks, 'background');
+      const response = await sendMessage(
+        'get-favicon-from-links',
+        { links: appropriateLinks, matchId: this.matchId },
+        'background',
+      );
       if (isNull(response)) {
         return;
       }
