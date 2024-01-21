@@ -8,37 +8,73 @@ interface IconNodeData {
 }
 
 {
-  class EnvSpecificFavicon {
-    static LINK_ID = 'env-specific-favicon';
-    static ESF_CHANGE_MARK = 'esf-change-mark';
-    static headNode: HTMLHeadElement;
-    static allIconNodes = new Map<HTMLLinkElement, IconNodeData>();
-    static visibleIconNode = document.createElement('link');
-    static iconNodeObservers = new WeakMap<HTMLLinkElement, MutationObserver>();
-    static visibleIconHref: string;
-    static debouncedRefreshVisibleFavicon: ReturnType<typeof debounce<() => Promise<void>>>;
+  class EnvSpecificFaviconSingleton {
+    static activeInstance: EnvSpecificFavicon | null = null;
 
     static {
-      this.init();
+      this.runWhenNeeded();
     }
 
-    static init(): void {
-      this.headNode = document.head;
-      if (!isNull(this.headNode) && this.headNode.querySelector(`#${this.LINK_ID}`)) {
-        return;
+    static async runWhenNeeded(): Promise<void> {
+      // Detect when URL or title change
+      // Only for Chromium, not yet supported in Firefox & Safari
+      if ('navigation' in window) {
+        // @ts-ignore
+        window.navigation.addEventListener('navigate', async () => {
+          const isMatch = await this.checkForMatch();
+          // TODO: We need to check the match is still the same, if not, we have to terminate + recreate
+          if (isMatch && isNull(this.activeInstance)) {
+            this.activeInstance = new EnvSpecificFavicon();
+          }
+
+          if (!isMatch && !isNull(this.activeInstance)) {
+            this.activeInstance.terminate();
+            this.activeInstance = null;
+          }
+        });
       }
-      document.head.append(this.visibleIconNode);
-      this.debouncedRefreshVisibleFavicon = debounce(() => this.refreshVisibleFavicon(), 20);
+
+      if (await this.checkForMatch()) {
+        this.activeInstance = new EnvSpecificFavicon();
+      }
+    }
+
+    static checkForMatch() {
+      return sendMessage('has-match', null, 'background');
+    }
+  }
+
+  class EnvSpecificFavicon {
+    private static LINK_ID = 'env-specific-favicon';
+    private static ESF_CHANGE_MARK = 'esf-change-mark';
+
+    private headNode: HTMLHeadElement;
+    private allIconNodes = new Map<HTMLLinkElement, IconNodeData>();
+    private customIconNode = document.createElement('link');
+    private iconNodeObservers = new WeakMap<HTMLLinkElement, MutationObserver>();
+    private customIconHref: string = '';
+    private debouncedRefreshCustomFavicon: ReturnType<typeof debounce<() => Promise<void>>>;
+    private headObserver: MutationObserver | null = null;
+
+    constructor() {
+      this.headNode = document.head;
+      if (!isNull(this.headNode) && this.headNode.querySelector(`#${EnvSpecificFavicon.LINK_ID}`)) {
+        throw new Error(`Document is missing a head or Env Specific Favicon is already active`);
+      }
+
+      this.customIconNode.setAttribute('href', 'data:,'); // TODO: Il faut peut être rajouter l'id aussi
+      document.head.append(this.customIconNode);
+      this.debouncedRefreshCustomFavicon = debounce(() => this.refreshCustomFavicon(), 20);
 
       this.updateAllIconNodes();
-      this.observeVisibleIcon();
+      this.observeCustomIcon();
       this.observeHead();
-      this.refreshVisibleFavicon();
+      this.refreshCustomFavicon();
     }
 
-    static updateAllIconNodes(): { foundNewIconNodes: boolean } {
+    updateAllIconNodes(): { foundNewIconNodes: boolean } {
       const nodeList = document.head.querySelectorAll<HTMLLinkElement>(`
-      link:not(#env-specific-favicon):not([rel="mask-icon"]):not([rel="fluid-icon"])[rel*="icon"],
+      link:not(#${EnvSpecificFavicon.LINK_ID}):not([rel="mask-icon"]):not([rel="fluid-icon"])[rel*="icon"],
       link[rel="apple-touch-startup-image"]
       `);
 
@@ -74,19 +110,19 @@ interface IconNodeData {
       };
     }
 
-    static updateAllIconNodesAndRefreshIfNeeded() {
+    updateAllIconNodesAndRefreshIfNeeded() {
       const { foundNewIconNodes } = this.updateAllIconNodes();
       if (foundNewIconNodes) {
-        this.debouncedRefreshVisibleFavicon();
+        this.debouncedRefreshCustomFavicon();
       }
     }
 
-    static invalidateIconNode(node: HTMLLinkElement): void {
+    invalidateIconNode(node: HTMLLinkElement): void {
       this.addChangeMark(node);
       node.removeAttribute('href');
     }
 
-    static getIconNodeData(iconNode: HTMLLinkElement): IconNodeData {
+    getIconNodeData(iconNode: HTMLLinkElement): IconNodeData {
       const href = iconNode.getAttribute('href');
       const absoluteUrl = isNull(href) ? null : new URL(href, window.location.href).href;
       return {
@@ -95,15 +131,15 @@ interface IconNodeData {
       };
     }
 
-    static updateVisibleIcon(): void {
-      this.addChangeMark(this.visibleIconNode);
-      this.visibleIconNode.setAttribute('id', this.LINK_ID);
-      this.visibleIconNode.setAttribute('rel', 'icon');
-      this.visibleIconNode.setAttribute('sizes', 'any');
-      this.visibleIconNode.setAttribute('href', this.visibleIconHref);
+    updateCustomIcon(): void {
+      this.addChangeMark(this.customIconNode);
+      this.customIconNode.setAttribute('id', EnvSpecificFavicon.LINK_ID);
+      this.customIconNode.setAttribute('rel', 'icon');
+      this.customIconNode.setAttribute('sizes', 'any');
+      this.customIconNode.setAttribute('href', this.customIconHref);
     }
 
-    static forceVisibleIconVisibility(): void {
+    forceCustomIconVisibility(): void {
       const lastHeadNode = this.headNode.querySelector(':last-child');
 
       const invalidNodePositionFlag =
@@ -112,48 +148,48 @@ interface IconNodeData {
         Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
       const isNotLastNode =
         !isNull(lastHeadNode) &&
-        (lastHeadNode.compareDocumentPosition(this.visibleIconNode) & invalidNodePositionFlag) !== 0;
+        (lastHeadNode.compareDocumentPosition(this.customIconNode) & invalidNodePositionFlag) !== 0;
 
       if (isNotLastNode) {
-        this.headNode.append(this.visibleIconNode);
+        this.headNode.append(this.customIconNode);
       }
     }
 
-    static observeHead(): void {
-      const headObserver = new MutationObserver((mutations) => {
+    observeHead(): void {
+      this.headObserver = new MutationObserver((mutations) => {
         let isNodesAdded = false;
         let isNodesRemoved = false;
-        let isVisibleIconDeleted = false;
+        let isCustomIconDeleted = false;
         mutations.some((m) => {
           if (!isNodesAdded) {
             const addedNodes = Array.from(m.addedNodes);
-            isNodesAdded = addedNodes.some((n: any) => n.getAttribute('id') !== this.LINK_ID);
+            isNodesAdded = addedNodes.some((n: any) => n.getAttribute('id') !== EnvSpecificFavicon.LINK_ID);
           }
 
           const removedNodes = Array.from(m.removedNodes);
           if (!isNodesRemoved) {
-            isNodesRemoved = removedNodes.some((n: any) => n.getAttribute('id') !== this.LINK_ID);
+            isNodesRemoved = removedNodes.some((n: any) => n.getAttribute('id') !== EnvSpecificFavicon.LINK_ID);
           }
 
-          if (!isVisibleIconDeleted) {
-            isVisibleIconDeleted = removedNodes.some((n: any) => n.getAttribute('id') === this.LINK_ID);
+          if (!isCustomIconDeleted) {
+            isCustomIconDeleted = removedNodes.some((n: any) => n.getAttribute('id') === EnvSpecificFavicon.LINK_ID);
           }
 
-          return isVisibleIconDeleted && isNodesRemoved && isNodesAdded;
+          return isCustomIconDeleted && isNodesRemoved && isNodesAdded;
         });
 
-        if (isNodesAdded || isVisibleIconDeleted) {
-          this.forceVisibleIconVisibility();
+        if (isNodesAdded || isCustomIconDeleted) {
+          this.forceCustomIconVisibility();
         }
 
         if (isNodesAdded || isNodesRemoved) {
           this.updateAllIconNodesAndRefreshIfNeeded();
         }
       });
-      headObserver.observe(document.head, { childList: true });
+      this.headObserver.observe(document.head, { childList: true });
     }
 
-    static setIconNodeObserver(iconNode: HTMLLinkElement): void {
+    setIconNodeObserver(iconNode: HTMLLinkElement): void {
       if (this.iconNodeObservers.has(iconNode)) {
         return;
       }
@@ -166,42 +202,42 @@ interface IconNodeData {
         }
         this.allIconNodes.set(iconNode, this.getIconNodeData(iconNode));
         this.invalidateIconNode(iconNode);
-        this.debouncedRefreshVisibleFavicon();
+        this.debouncedRefreshCustomFavicon();
       });
       nodeObserver.observe(iconNode, { attributes: true, attributeFilter: ['href'] });
       this.iconNodeObservers.set(iconNode, nodeObserver);
     }
 
-    static observeVisibleIcon(): void {
+    observeCustomIcon(): void {
       const observer = new MutationObserver(() => {
         // The change has been made by our last update
-        const hadChangeMark = this.checkAndRemoveChangeMark(this.visibleIconNode);
+        const hadChangeMark = this.checkAndRemoveChangeMark(this.customIconNode);
         if (hadChangeMark) {
           return;
         }
 
-        const nodeData = this.getIconNodeData(this.visibleIconNode);
-        if (nodeData.href !== this.visibleIconHref) {
-          this.updateVisibleIcon();
+        const nodeData = this.getIconNodeData(this.customIconNode);
+        if (nodeData.href !== this.customIconHref) {
+          this.updateCustomIcon();
         }
       });
 
-      observer.observe(this.visibleIconNode, { attributes: true, attributeFilter: ['href'] });
+      observer.observe(this.customIconNode, { attributes: true, attributeFilter: ['href'] });
     }
 
-    static addChangeMark(iconNode: HTMLLinkElement): void {
-      iconNode.setAttribute(this.ESF_CHANGE_MARK, 'true');
+    addChangeMark(iconNode: HTMLLinkElement): void {
+      iconNode.setAttribute(EnvSpecificFavicon.ESF_CHANGE_MARK, 'true');
     }
 
-    static checkAndRemoveChangeMark(iconNode: HTMLLinkElement): boolean {
-      const hasChangeMark = iconNode.hasAttribute(this.ESF_CHANGE_MARK);
+    checkAndRemoveChangeMark(iconNode: HTMLLinkElement): boolean {
+      const hasChangeMark = iconNode.hasAttribute(EnvSpecificFavicon.ESF_CHANGE_MARK);
       if (hasChangeMark) {
-        iconNode.removeAttribute(this.ESF_CHANGE_MARK);
+        iconNode.removeAttribute(EnvSpecificFavicon.ESF_CHANGE_MARK);
       }
       return hasChangeMark;
     }
 
-    static getAppropriateLinks(): string[] {
+    getAppropriateLinks(): string[] {
       const appropriateLinks = new Set<string>();
       appropriateLinks.add(window.location.origin + '/favicon.ico');
 
@@ -233,15 +269,34 @@ interface IconNodeData {
       return sortedUrlArray;
     }
 
-    static async refreshVisibleFavicon(): Promise<void> {
+    async refreshCustomFavicon(): Promise<void> {
       const appropriateLinks = this.getAppropriateLinks();
 
       const response = await sendMessage('get-favicon-from-links', appropriateLinks, 'background');
       if (isNull(response)) {
         return;
       }
-      this.visibleIconHref = response.favicon;
-      this.updateVisibleIcon();
+      this.customIconHref = response.favicon;
+      this.updateCustomIcon();
+    }
+
+    terminate(): void {
+      if (!isNull(this.headObserver)) {
+        this.headObserver.disconnect();
+      }
+
+      this.customIconNode.remove();
+
+      for (const iconNode of this.allIconNodes.keys()) {
+        const iconNodeData = this.allIconNodes.get(iconNode)!;
+        const observer = this.iconNodeObservers.get(iconNode)!;
+        observer?.disconnect();
+        if (!isNull(iconNodeData.href)) {
+          iconNode.setAttribute('href', iconNodeData.href);
+        }
+        this.iconNodeObservers.delete(iconNode);
+      }
+      this.allIconNodes.clear();
     }
   }
 }

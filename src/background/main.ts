@@ -4,6 +4,7 @@ import { baseFavicons, defaultSettings } from '~/configuration/settings';
 import { drawFilterOnCanvas, loadImage, SettingsStorage, createCanvasWithImage, canvaToDataURL } from '~/logic';
 import { isNull, isUndefined } from '~/utils';
 import { AppDataGlobal, AppDataRule } from '~/types/app';
+import { Endpoint } from 'webext-bridge';
 
 browser.runtime.onInstalled.addListener((event): void => {
   if (event.reason === 'install') {
@@ -22,13 +23,15 @@ onMessage('get-favicon', async ({ data }) => {
   return { favicon: await getNewFavicon(data, [getFallbackFavicon(SETTINGS)]) };
 });
 
+onMessage('has-match', async ({ sender }) => {
+  const { match } = await getMatchForSender(sender);
+  return !(match == false);
+});
+
 // Generate favicon for the content script
 onMessage('get-favicon-from-links', async ({ data: links, sender }) => {
-  const tab = await browser.tabs.get(sender.tabId);
-  const SETTINGS = await SettingsStorage.getItem();
-  const match = getMatch(SETTINGS, { url: tab.url, title: tab.title });
+  const { SETTINGS, match } = await getMatchForSender(sender);
   if (match === false) {
-    console.warn('no match for this tab');
     return null;
   }
 
@@ -41,6 +44,14 @@ onMessage('get-favicon-from-links', async ({ data: links, sender }) => {
     return null;
   }
 });
+
+async function getMatchForSender(sender: Endpoint) {
+  const tab = await browser.tabs.get(sender.tabId);
+  const SETTINGS = await SettingsStorage.getItem();
+  const match = getMatch(SETTINGS, { url: tab.url, title: tab.title });
+
+  return { SETTINGS, match };
+}
 
 function getMatch(
   SETTINGS: AppDataGlobal,
