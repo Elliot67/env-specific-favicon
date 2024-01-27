@@ -35,7 +35,7 @@ export async function getManifest(): Promise<Manifest.WebExtensionManifest> {
       128: './assets/icon-128.png',
       512: './assets/icon-512.png',
     },
-    permissions: ['tabs', 'storage'],
+    permissions: ['storage'],
     host_permissions: ['*://*/*'],
     content_scripts: [
       {
