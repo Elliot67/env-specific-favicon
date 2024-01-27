@@ -22,4 +22,11 @@ const migrationScripts: { fromVersion: string; toVersion: string; migrate: (sett
       });
     },
   },
+  {
+    fromVersion: '1.2.0',
+    toVersion: '1.3.0',
+    migrate: (settings) => {
+      settings.version = '1.3.0';
+    },
+  },
 ];
