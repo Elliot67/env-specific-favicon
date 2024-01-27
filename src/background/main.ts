@@ -4,6 +4,7 @@ import { baseFavicons, defaultSettings } from '~/configuration/settings';
 import { drawFilterOnCanvas, loadImage, SettingsStorage, createCanvasWithImage, canvaToDataURL } from '~/logic';
 import { isNull, isUndefined } from '~/utils';
 import { AppDataGlobal, AppDataRule } from '~/types/app';
+import { TtlCache } from '~/utils/ttl-cache';
 
 browser.runtime.onInstalled.addListener((event): void => {
   if (event.reason === 'install') {
@@ -16,6 +17,21 @@ browser.runtime.onInstalled.addListener((event): void => {
   }
 });
 
+//
+// Caches
+type GetReturnTypeOfMessage<K extends string> = ReturnType<Parameters<typeof onMessage<any, K>>[1]>;
+
+const cacheTtl = 1_000 * 15; // 15 secondes
+const cacheGetMatch = new TtlCache<string, GetReturnTypeOfMessage<'get-match'>>({ ttl: cacheTtl });
+const cacheGetFaviconFromLinks = new TtlCache<string, GetReturnTypeOfMessage<'get-favicon-from-links'>>({
+  ttl: cacheTtl,
+});
+
+browser.storage.local.onChanged.addListener((changes) => {
+  cacheGetMatch.clear();
+  cacheGetFaviconFromLinks.clear();
+});
+
 // Generate favicon for Options page
 onMessage('get-favicon', async ({ data }) => {
   const SETTINGS = await SettingsStorage.getItem();
@@ -24,18 +40,29 @@ onMessage('get-favicon', async ({ data }) => {
 
 // Find out if the tab has a corresponding rule
 onMessage('get-match', async ({ data }) => {
+  const cacheKey = '' + data.url + data.title;
+  const cacheResponse = cacheGetMatch.get(cacheKey);
+  if (!isUndefined(cacheResponse)) {
+    return cacheResponse;
+  }
+
   const SETTINGS = await SettingsStorage.getItem();
 
   const match = getMatch(SETTINGS, { url: data.url, title: data.title });
-  if (match === false) {
-    return null;
-  }
-  return match.id;
+
+  const response = match === false ? null : match.id;
+  cacheGetMatch.set(cacheKey, response);
+  return response;
 });
 
 // Generate favicon for the content script
 onMessage('get-favicon-from-links', async ({ data: { links, matchId } }) => {
-  // TODO: Add a simple cache layer
+  const cacheKey = '' + links.sort().join('') + matchId;
+  const cacheResponse = cacheGetFaviconFromLinks.get(cacheKey);
+  if (!isUndefined(cacheResponse)) {
+    return cacheResponse;
+  }
+
   const SETTINGS = await SettingsStorage.getItem();
   const match = SETTINGS.rules.find((rule) => rule.id === matchId);
   if (isUndefined(match)) {
@@ -46,7 +73,9 @@ onMessage('get-favicon-from-links', async ({ data: { links, matchId } }) => {
 
   try {
     const favicon = await getNewFavicon(match, links);
-    return { favicon };
+    const response = { favicon };
+    cacheGetFaviconFromLinks.set(cacheKey, response);
+    return response;
   } catch (e) {
     return null;
   }
@@ -89,7 +118,7 @@ async function getNewFavicon(rule: AppDataRule, links: string[]): Promise<string
       const customizedFavicon = await getCustomizedFavicon(rule, link);
       return customizedFavicon;
     } catch (e) {
-      console.warn('error while genereting the favicon with this link, trying the next link', e);
+      console.warn('error while generating the favicon with this link, trying the next link', e);
     }
   }
 
