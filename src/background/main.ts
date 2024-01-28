@@ -57,7 +57,7 @@ onMessage('get-match', async ({ data }) => {
 
 // Generate favicon for the content script
 onMessage('get-favicon-from-links', async ({ data: { links, matchId } }) => {
-  const cacheKey = '' + links.sort().join('') + matchId;
+  const cacheKey = '' + links.join('') + matchId;
   const cacheResponse = cacheGetFaviconFromLinks.get(cacheKey);
   if (!isUndefined(cacheResponse)) {
     return cacheResponse;
