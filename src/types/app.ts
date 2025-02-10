@@ -7,8 +7,8 @@ export interface AppDataGlobal {
   rules: AppDataRule[];
 }
 
-export type IconsTypeSettings = 'global' | 'earth' | 'custom';
-export type IconsTypeFull = 'global_dark' | 'global_light' | 'earth_dark' | 'earth_light' | 'custom';
+export type IconsTypeSettings = 'globe' | 'earth' | 'custom';
+export type IconsTypeFull = 'globe_dark' | 'globe_light' | 'earth_dark' | 'earth_light' | 'custom';
 
 export interface AppDataRule {
   id: string;

@@ -210,8 +210,8 @@ const faviconOptions: Array<{
   value: IconsTypeSettings;
 }> = [
   {
-    label: lang.favicon.global,
-    value: 'global',
+    label: lang.favicon.globe,
+    value: 'globe',
   },
   {
     label: lang.favicon.earth,

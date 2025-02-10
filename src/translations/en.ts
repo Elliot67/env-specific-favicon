@@ -10,7 +10,7 @@ export const en: LangInterface = {
     },
   },
   favicon: {
-    global: 'Global',
+    globe: 'Globe',
     earth: 'Earth',
     custom: 'Custom',
   },
