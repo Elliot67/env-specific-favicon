@@ -16,11 +16,11 @@ export interface AppDataRule {
   type: AppDataRuleType;
   testPattern: string;
   replacementType: AppDataRuleReplacementType;
-  filter: AppDataRyleFilter;
+  filter: AppDataRuleFilter;
   color: string;
   externalFaviconLink: string;
 }
 
 export type AppDataRuleType = 'url' | 'title';
 export type AppDataRuleReplacementType = 'generated' | 'external';
-export type AppDataRyleFilter = 'top' | 'bottom' | 'cover' | 'fill';
+export type AppDataRuleFilter = 'top' | 'bottom' | 'cover' | 'fill';

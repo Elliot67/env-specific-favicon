@@ -187,7 +187,7 @@ import {
   IconsTypeSettings,
   AppDataRuleType,
   AppDataRuleReplacementType,
-  AppDataRyleFilter,
+  AppDataRuleFilter,
 } from '~/types/app';
 import {
   isDef,
@@ -253,7 +253,7 @@ const ruleReplacementTypeOptions: Array<{
 
 const ruleColorPositionOptions: Array<{
   label: string;
-  value: AppDataRyleFilter;
+  value: AppDataRuleFilter;
 }> = [
   {
     label: lang.rules.filters.top,
