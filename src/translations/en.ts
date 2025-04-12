@@ -5,12 +5,12 @@ export const en: LangInterface = {
     permissions: {
       title: 'Missing required permission',
       description:
-        'To ensure the extension operates effectively, it requires permission to access all websites in order to match the right ones and retrieve their favicons. Without this access, the extension will not work as intended.',
+        'For the extension to operate effectively, it requires permission to access all websites in order to match the right ones and retrieve their favicons. Without this access, the extension will not work as intended.',
       button: 'Grant permission',
     },
   },
   favicon: {
-    global: 'Global',
+    globe: 'Globe',
     earth: 'Earth',
     custom: 'Custom',
   },

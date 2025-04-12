@@ -36,4 +36,14 @@ const migrationScripts: { fromVersion: string; toVersion: string; migrate: (sett
       settings.version = '1.3.1';
     },
   },
+  {
+    fromVersion: '1.3.1',
+    toVersion: '1.3.2',
+    migrate: (settings) => {
+      settings.version = '1.3.2';
+      if (settings.favicon.type === 'global') {
+        settings.favicon.type = 'globe';
+      }
+    },
+  },
 ];

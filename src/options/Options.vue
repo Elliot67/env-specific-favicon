@@ -27,9 +27,9 @@
         <div class="sectionItem">
           <h3 class="sectionLabel">Default favicon</h3>
           <p class="sectionItemDescription">
-            If a rule match a website without any favicon, the fallback icon will be used. If you want to keep your
-            browser default favicon, you have to choose 'custom' and upload the image. More details on how to get the
-            original file can be found in
+            If a rule matches a website without any favicon, this fallback icon will be used. If you want to keep your
+            browser's default favicon, you have to choose 'custom' and upload the corresponding image. More details on
+            how to get the original file can be found in
             <a href="https://github.com/Elliot67/env-specific-favicon">the repository readme</a>.
           </p>
           <EsfRadioGroup v-model="settings.favicon.type" :options="faviconOptions"></EsfRadioGroup>
@@ -187,7 +187,7 @@ import {
   IconsTypeSettings,
   AppDataRuleType,
   AppDataRuleReplacementType,
-  AppDataRyleFilter,
+  AppDataRuleFilter,
 } from '~/types/app';
 import {
   isDef,
@@ -210,8 +210,8 @@ const faviconOptions: Array<{
   value: IconsTypeSettings;
 }> = [
   {
-    label: lang.favicon.global,
-    value: 'global',
+    label: lang.favicon.globe,
+    value: 'globe',
   },
   {
     label: lang.favicon.earth,
@@ -253,7 +253,7 @@ const ruleReplacementTypeOptions: Array<{
 
 const ruleColorPositionOptions: Array<{
   label: string;
-  value: AppDataRyleFilter;
+  value: AppDataRuleFilter;
 }> = [
   {
     label: lang.rules.filters.top,
