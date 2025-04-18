@@ -9,8 +9,8 @@ interface IconNodeData {
 }
 
 {
-  class EnvSpecificFaviconSingleton {
-    static activeInstance: EnvSpecificFavicon | null = null;
+  class RulesMatchManager {
+    static activeInstance: FaviconSynchronizer | null = null;
 
     static {
       this.runWhenNeeded();
@@ -22,7 +22,7 @@ interface IconNodeData {
 
       const matchId = await this.getNewMatchId();
       if (!isNull(matchId)) {
-        this.activeInstance = new EnvSpecificFavicon(matchId);
+        this.activeInstance = new FaviconSynchronizer(matchId);
       }
     }
 
@@ -38,7 +38,7 @@ interface IconNodeData {
 
         if (isNull(this.activeInstance)) {
           if (hasMatch) {
-            this.activeInstance = new EnvSpecificFavicon(matchId);
+            this.activeInstance = new FaviconSynchronizer(matchId);
           }
 
           return;
@@ -55,7 +55,7 @@ interface IconNodeData {
         }
 
         this.activeInstance.terminate();
-        this.activeInstance = new EnvSpecificFavicon(matchId);
+        this.activeInstance = new FaviconSynchronizer(matchId);
       });
     }
 
@@ -64,9 +64,9 @@ interface IconNodeData {
     }
   }
 
-  class EnvSpecificFavicon {
-    private static LINK_ID = 'env-specific-favicon';
-    private static ESF_CHANGE_MARK = 'esf-change-mark';
+  class FaviconSynchronizer {
+    private static LINK_ID = 'custom-favicon-extension';
+    private static CHANGE_MARK_ATTR = 'custom-favicon-extension-change-mark';
 
     public matchId: string;
 
@@ -81,11 +81,11 @@ interface IconNodeData {
     constructor(matchId: AppDataRule['id']) {
       this.matchId = matchId;
       this.headNode = document.head;
-      if (!isNull(this.headNode) && this.headNode.querySelector(`#${EnvSpecificFavicon.LINK_ID}`)) {
+      if (!isNull(this.headNode) && this.headNode.querySelector(`#${FaviconSynchronizer.LINK_ID}`)) {
         throw new Error(`Document is missing a head or EnvSpecificFavicon is already active in the page.`);
       }
 
-      this.customIconNode.setAttribute('id', EnvSpecificFavicon.LINK_ID);
+      this.customIconNode.setAttribute('id', FaviconSynchronizer.LINK_ID);
       this.customIconNode.setAttribute('href', 'data:,');
       document.head.append(this.customIconNode);
       this.debouncedRefreshCustomFavicon = debounce(() => this.refreshCustomFavicon(), 20);
@@ -98,7 +98,7 @@ interface IconNodeData {
 
     updateAllIconNodes(): { foundNewIconNodes: boolean } {
       const nodeList = document.head.querySelectorAll<HTMLLinkElement>(`
-      link:not(#${EnvSpecificFavicon.LINK_ID}):not([rel="mask-icon"]):not([rel="fluid-icon"])[rel*="icon"],
+      link:not(#${FaviconSynchronizer.LINK_ID}):not([rel="mask-icon"]):not([rel="fluid-icon"])[rel*="icon"],
       link[rel="apple-touch-startup-image"]
       `);
 
@@ -157,7 +157,7 @@ interface IconNodeData {
 
     updateCustomIcon(): void {
       this.addChangeMark(this.customIconNode);
-      this.customIconNode.setAttribute('id', EnvSpecificFavicon.LINK_ID);
+      this.customIconNode.setAttribute('id', FaviconSynchronizer.LINK_ID);
       this.customIconNode.setAttribute('rel', 'icon');
       this.customIconNode.setAttribute('sizes', 'any');
       this.customIconNode.setAttribute('href', this.customIconHref);
@@ -187,16 +187,16 @@ interface IconNodeData {
         mutations.some((m) => {
           if (!isNodesAdded) {
             const addedNodes = Array.from(m.addedNodes);
-            isNodesAdded = addedNodes.some((n: any) => n.getAttribute('id') !== EnvSpecificFavicon.LINK_ID);
+            isNodesAdded = addedNodes.some((n: any) => n.getAttribute('id') !== FaviconSynchronizer.LINK_ID);
           }
 
           const removedNodes = Array.from(m.removedNodes);
           if (!isNodesRemoved) {
-            isNodesRemoved = removedNodes.some((n: any) => n.getAttribute('id') !== EnvSpecificFavicon.LINK_ID);
+            isNodesRemoved = removedNodes.some((n: any) => n.getAttribute('id') !== FaviconSynchronizer.LINK_ID);
           }
 
           if (!isCustomIconDeleted) {
-            isCustomIconDeleted = removedNodes.some((n: any) => n.getAttribute('id') === EnvSpecificFavicon.LINK_ID);
+            isCustomIconDeleted = removedNodes.some((n: any) => n.getAttribute('id') === FaviconSynchronizer.LINK_ID);
           }
 
           return isCustomIconDeleted && isNodesRemoved && isNodesAdded;
@@ -250,13 +250,13 @@ interface IconNodeData {
     }
 
     addChangeMark(iconNode: HTMLLinkElement): void {
-      iconNode.setAttribute(EnvSpecificFavicon.ESF_CHANGE_MARK, 'true');
+      iconNode.setAttribute(FaviconSynchronizer.CHANGE_MARK_ATTR, 'true');
     }
 
     checkAndRemoveChangeMark(iconNode: HTMLLinkElement): boolean {
-      const hasChangeMark = iconNode.hasAttribute(EnvSpecificFavicon.ESF_CHANGE_MARK);
+      const hasChangeMark = iconNode.hasAttribute(FaviconSynchronizer.CHANGE_MARK_ATTR);
       if (hasChangeMark) {
-        iconNode.removeAttribute(EnvSpecificFavicon.ESF_CHANGE_MARK);
+        iconNode.removeAttribute(FaviconSynchronizer.CHANGE_MARK_ATTR);
       }
       return hasChangeMark;
     }
