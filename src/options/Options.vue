@@ -30,7 +30,7 @@
             If a rule matches a website without any favicon, this fallback icon will be used. If you want to keep your
             browser's default favicon, you have to choose 'custom' and upload the corresponding image. More details on
             how to get the original file can be found in
-            <a href="https://github.com/Elliot67/env-specific-favicon">the repository readme</a>.
+            <a href="https://github.com/Elliot67/custom-favicon">the repository readme</a>.
           </p>
           <EsfRadioGroup v-model="settings.favicon.type" :options="faviconOptions"></EsfRadioGroup>
           <template v-if="settings.favicon.type === 'custom'">
@@ -284,7 +284,7 @@ const showImportZone = ref(false);
 const importSettingsData = ref('');
 
 function exportSettings() {
-  const fileName = `env-specific-favicon-${getDateAsString()}`;
+  const fileName = `custom-favicon-${getDateAsString()}`;
   exportJSONFile(fileName, toRaw(settings));
 }
 
