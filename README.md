@@ -11,11 +11,11 @@ If your rule isn't working, make sure your pattern is correct with online tools 
 
 The extension is available on all chromium based browser (Google Chrome, Microsoft Edge, Opera, Brave) from [the chrome web store](https://chrome.google.com/webstore/detail/env-specific-favicon/licfgcgpjgbbankegljcpbklabdnmopl).
 
-Firefox doesn't have any published version yet while [this](https://github.com/w3c/webextensions/issues/119) [feature](https://bugzilla.mozilla.org/show_bug.cgi?id=1766026) is not implemented. However, the extension can be built and works after manually allowing all the requested permissions inside `about:addons` > Env Specific Favicon > Permissions.
+Support for Firefox will be possible once the [Navigation API](https://bugzilla.mozilla.org/show_bug.cgi?id=1777171) is implemented.
 
 ## Development
 
-Source code is based on the [vitesse-webext template](https://github.com/antfu/vitesse-webext) with manifest v3.
+The project architecture is based on the [vitesse-webext template](https://github.com/antfu/vitesse-webext).
 
 ## Additionnal informations
 
